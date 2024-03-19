@@ -65,8 +65,12 @@
 
 (use-package which-key
   :ensure t
+  :init
+  (setq which-key-idle-delay 0.5)
   :config
-  (which-key-mode))
+  (which-key-mode)
+  (global-set-key (kbd "M-h") 'which-key-show-top-level))
+  
 
 
 (use-package all-the-icons
@@ -76,11 +80,9 @@
 (use-package treemacs
   :ensure t
   :init
-  (setq treemacs-file-follow-delay 0.1)
   (setq treemacs-width 45)
   :config
   (treemacs-follow-mode -1)
-  ;; (treemacs-fringe-indicator-mode 'always)
   (treemacs-project-follow-mode -1)
   (treemacs))
 
