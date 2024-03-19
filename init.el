@@ -15,6 +15,7 @@
 (menu-bar-mode 1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
+(tab-bar-mode -1)
 
 
 (setq display-line-numbers-minor-tick 5
@@ -33,8 +34,7 @@
   (setq ivy-use-virtual-buffers t)
   (setq ivy-count-format "(%d/%d) ")
   (setq ivy-re-builders-alist
-      '((ivy-switch-buffer . ivy--regex-plus)
-        (t . ivy--regex-fuzzy)))
+      '((ivy-switch-buffer . ivy--regex-plus)))
   (ivy-mode 1))
 
 
@@ -75,7 +75,13 @@
 
 (use-package treemacs
   :ensure t
+  :init
+  (setq treemacs-file-follow-delay 0.1)
+  (setq treemacs-width 45)
   :config
+  (treemacs-follow-mode -1)
+  ;; (treemacs-fringe-indicator-mode 'always)
+  (treemacs-project-follow-mode -1)
   (treemacs))
 
 
@@ -105,6 +111,10 @@
   :ensure t)
 
 
+(use-package dockerfile-mode
+  :ensure t)
+
+
 (use-package docker-compose-mode
   :ensure t)
 
@@ -122,4 +132,14 @@
   :ensure t
   :config
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+
+
+;; (use-package fira-code-mode
+;;   :ensure t
+;;   :config
+;;   (fira-code-mode))
+
+
+(use-package vterm
+  :ensure t)
 
