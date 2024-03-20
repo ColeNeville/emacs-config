@@ -83,7 +83,6 @@
   (setq treemacs-width 45)
   :config
   (treemacs-follow-mode -1)
-  (treemacs-project-follow-mode -1)
   (treemacs))
 
 
@@ -145,3 +144,5 @@
 (use-package vterm
   :ensure t)
 
+(use-package counsel
+  :ensure t)
