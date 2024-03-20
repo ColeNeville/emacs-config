@@ -1,23 +1,36 @@
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
+
+
 (require 'use-package)
+(setq auto-package-always-ensure)
 
 
+(use-package auto-package-update
+  :config
+  (setq auto-package-update-delete-old-versions t)
+  (setq auto-package-update-hide-results t)
+  (auto-package-update-maybe))
+
+
+;; Remove the annoying ringing
 (setq visible-bell t
       ring-bell-function 'ignore)
+
+;; This shouldn't even be on by default...
 (setq inhibit-startup-screen t
       inhibit-startup-message t)
 
 
 ;; Be explicit/and enable some minor modes
-
 (menu-bar-mode 1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (tab-bar-mode -1)
 
 
+;; Line numbers in the editors
 (setq display-line-numbers-minor-tick 5
       display-line-numbers-major-tick 25
       display-line-numbers-width 4)
@@ -28,18 +41,70 @@
 (add-hook 'prog-mode-hook 'flymake-mode)
 
 
-(use-package ivy
-  :ensure t
+(use-package modus-themes
   :config
-  (setq ivy-use-virtual-buffers t)
-  (setq ivy-count-format "(%d/%d) ")
-  (setq ivy-re-builders-alist
-      '((ivy-switch-buffer . ivy--regex-plus)))
-  (ivy-mode 1))
+  (setq modus-themes-common-palette-overrides
+	`((border-mode-line-active bg-mode-line-active)
+	  (border-mode-line-inactive bg-mode-line-inactive)))
+  (setq modus-vivendi-palette-overrides
+	`((bg-main "#161616")))
+  (load-theme 'modus-vivendi t))
+
+
+(use-package which-key
+  :init
+  (setq which-key-idle-delay 0.5)
+  :config
+  (which-key-mode)
+  (global-set-key (kbd "M-h") 'which-key-show-top-level))
+
+
+(use-package ace-window
+  :config
+  (global-set-key (kbd "C-x S") 'ace-window))
+
+
+(use-package docker)
+
+
+(use-package magit)
+
+
+(use-package vterm)
+
+
+;; Language major modes
+
+(use-package ledger-mode
+  :config
+  ;; ledger mode isn't considered a programming mode
+  (add-hook 'ledger-mode-hook 'flymake-mode))
+
+
+(use-package nix-mode)
+
+
+(use-package dockerfile-mode)
+
+
+(use-package docker-compose-mode)
+
+
+(use-package robe
+  :hook (ruby-mode . robe-mode))
+
+
+;; Language utility packages
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+
+;; Search and code completion
 
 
 (use-package company
-  :ensure t
+  :commands global-company-mode
   :config
   (setq company-tooltip-align-annotations t
 	company-tooltip-offset-display 'lines
@@ -52,97 +117,40 @@
   (global-company-mode))
 
 
-(use-package modus-themes
-  :ensure t
-  :config
-  (setq modus-themes-common-palette-overrides
-	`((border-mode-line-active bg-mode-line-active)
-	  (border-mode-line-inactive bg-mode-line-inactive)))
-  (setq modus-vivendi-palette-overrides
-	`((bg-main "#161616")))
-  (load-theme 'modus-vivendi t))
-
-
-(use-package which-key
-  :ensure t
+(use-package counsel
+  :commands (counsel-mode, ivy-mode)
+  :bind (("C-f" . councel-grep)
+	 ("C-s" . counsel-projectile-grep))
   :init
-  (setq which-key-idle-delay 0.5)
+  (setq ivy-dynamic-exhibit-delay-ms 250)
   :config
-  (which-key-mode)
-  (global-set-key (kbd "M-h") 'which-key-show-top-level))
-  
+  (counsel-mode))
 
 
-(use-package all-the-icons
-  :ensure t)
+;; Project functionality
+
+(use-package projectile
+  :commands (projectile-mode)
+  :bind (:map projectile-mode-map
+	      ("C-x p" . projectile-command-map))
+  :config
+  (projectile-mode 1))
 
 
 (use-package treemacs
-  :ensure t
+  :commands (treemacs, treemas-mode)
   :init
   (setq treemacs-width 45)
   :config
-  (treemacs-follow-mode -1)
-  (treemacs))
+  (treemacs-follow-mode 1)
+  (treemacs-git-commit-diff-mode 1))
 
 
-(use-package ace-window
-  :ensure t
+(use-package counsel-projectile
+  :commands (counsel-projectile-mode)
   :config
-  (global-set-key (kbd "C-x S") 'ace-window))
-
-(use-package docker
-  :ensure t)
+  (counsel-projectile-mode 1))
 
 
-(use-package magit
-  :ensure t)
+(use-package treemacs-projectile)
 
-
-;; Language major modes
-
-(use-package ledger-mode
-  :ensure t
-  :config
-  ;; ledger mode isn't considered a programming mode
-  (add-hook 'ledger-mode-hook 'flymake-mode))
-
-
-(use-package nix-mode
-  :ensure t)
-
-
-(use-package dockerfile-mode
-  :ensure t)
-
-
-(use-package docker-compose-mode
-  :ensure t)
-
-
-(use-package robe
-  :ensure t
-  :defer t
-  :config
-  (add-hook 'ruby-mode-hook 'robe-mode))
-
-
-;; Language utility packages
-
-(use-package rainbow-delimiters
-  :ensure t
-  :config
-  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
-
-
-;; (use-package fira-code-mode
-;;   :ensure t
-;;   :config
-;;   (fira-code-mode))
-
-
-(use-package vterm
-  :ensure t)
-
-(use-package counsel
-  :ensure t)
