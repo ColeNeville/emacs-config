@@ -3,7 +3,8 @@
 #+EMAIL: primary@coleneville.com
 #+OPTIONS: num:nil
 
-* Primary EMACS Config
+This gets packaged into ./config.el by org-babel-eval-in-repl imported by the init.el.
+
 ** Package Definitions
 *** Package Auto Update
 #+BEGIN_SRC emacs-lisp
@@ -30,9 +31,46 @@
   (use-package which-key
     :ensure t
     :commands (which-key-mode)
-    :bind (("M-h" . 'which-key-show-top-level))
+    :bind (("M-h" . which-key-show-top-level))
     :custom
     (which-key-idle-delay 0.5))
+#+END_SRC
+*** Ace Window
+#+BEGIN_SRC emacs-lisp
+  (use-package ace-window
+    :ensure t
+    :bind (("C-x S" . ace-window)))
+#+END_SRC
+*** Docker
+#+BEGIN_SRC emacs-lisp
+  (use-package docker :ensure t)
+#+END_SRC
+*** Magit (Git Integration)
+#+BEGIN_SRC emacs-lisp
+  (use-package magit :ensure t)
+#+END_SRC
+*** VTerm
+#+BEGIN_SRC emacs-lisp
+  (use-package vterm :ensure t)
+#+END_SRC
+*** Ledger Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package ledger-mode
+    :ensure t
+    :commands (ledger-mode)
+    :hook (ledger-mode . flymake-mode))
+#+END_SRC
+*** Nix Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package nix-mode
+    :ensure t
+    :commands (nix-mode))
+#+END_SRC
+*** Dockerfile Mode
+#+BEGIN_SRC emacs-lisp
+  (use-package docker-file-mode
+    :ensure t
+    :commands (docker-file-mode))
 #+END_SRC
 ** Main Config
 *** Setting Variables (not for packages)

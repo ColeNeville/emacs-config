@@ -17,9 +17,32 @@
 (use-package which-key
   :ensure t
   :commands (which-key-mode)
-  :bind (("M-h" . 'which-key-show-top-level))
+  :bind (("M-h" . which-key-show-top-level))
   :custom
   (which-key-idle-delay 0.5))
+
+(use-package ace-window
+  :ensure t
+  :bind (("C-x S" . ace-window)))
+
+(use-package docker :ensure t)
+
+(use-package magit :ensure t)
+
+(use-package vterm :ensure t)
+
+(use-package ledger-mode
+  :ensure t
+  :commands (ledger-mode)
+  :hook (ledger-mode . flymake-mode))
+
+(use-package nix-mode
+  :ensure t
+  :commands (nix-mode))
+
+(use-package docker-file-mode
+  :ensure t
+  :commands (docker-file-mode))
 
 (setq visible-bell t
       ring-bell-function 'ignore)

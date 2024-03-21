@@ -13,41 +13,6 @@
     user-emacs-directory)))
 
 
-(use-package ace-window
-  :ensure t
-  :config
-  (global-set-key (kbd "C-x S") 'ace-window))
-
-
-(use-package docker
-  :ensure t)
-
-
-(use-package magit
-  :ensure t)
-
-
-(use-package vterm
-  :ensure t)
-
-
-;; Language major modes
-
-(use-package ledger-mode
-  :ensure t
-  :config
-  ;; ledger mode isn't considered a programming mode
-  (add-hook 'ledger-mode-hook 'flymake-mode))
-
-
-(use-package nix-mode
-  :ensure t)
-
-
-(use-package dockerfile-mode
-  :ensure t)
-
-
 (use-package docker-compose-mode
   :ensure t)
 
@@ -134,7 +99,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(org-babel-eval-in-repl treemacs-projectile use-package which-key vterm treemacs robe rainbow-delimiters nix-mode neotree modus-themes magit ledger-mode helm flycheck dockerfile-mode docker-compose-mode docker counsel-projectile company auto-package-update all-the-icons)))
+   '(docker-file-mode org-babel-eval-in-repl treemacs-projectile use-package which-key vterm treemacs robe rainbow-delimiters nix-mode neotree modus-themes magit ledger-mode helm flycheck dockerfile-mode docker-compose-mode docker counsel-projectile company auto-package-update all-the-icons)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
