@@ -40,9 +40,63 @@
   :ensure t
   :commands (nix-mode))
 
-(use-package docker-file-mode
+(use-package dockerfile-mode
   :ensure t
-  :commands (docker-file-mode))
+  :commands (dockerfile-mode))
+
+(use-package docker-compose-mode
+  :ensure t
+  :commands (docker-compose-mode))
+
+(use-package robe
+  :ensure
+  :commands (robe-mode))
+
+(use-package rainbow-delimiters
+  :ensure t
+  :commands (rainbow-delimiters-mode))
+
+(use-package company
+  :ensure t
+  :custom
+  (company-tooltip-align-annotations t)
+  (company-tooltip-display 'lines)
+  (company-tooltip-flip-when-above t)
+  (company-tooltip-margin 3)
+  (company-tooltip-maximum-width 60)
+  (company-frontends '(company-pseudo-tooltip-frontend
+		       company-preview-if-just-one-frontend))
+  :commands (global-company-mode))
+
+(use-package counsel
+  :ensure t
+  :custom
+  (ivy-dynamic-exhibit-delay-ms 250)
+  :commands (counsel-mode
+	     ivy-mode)
+  :bind (("C-f" . counsel-grep)
+	 ("C-s" . counsel-projectile-grep)))
+
+(use-package counsel-projectile
+  :ensure t
+  :commands (counsel-projectile-mode))
+
+(use-package projectile
+  :ensure t
+  :commands (projectile-mode)
+  :bind (:map projectile-mode-map
+	      ("C-x p" . projectile-command-map)))
+
+(use-package treemacs
+  :ensure t
+  :custom
+  (treemacs-width 45)
+  :commands (treemacs)
+  :config
+  (treemacs-follow-mode 1)
+  (treemacs-git-commit-diff-mode 1))
+
+(use-package treemacs-projectile :ensure t)
 
 (setq visible-bell t
       ring-bell-function 'ignore)
@@ -64,6 +118,20 @@
 (line-number-mode -1)
 
 (which-key-mode)
+(global-company-mode)
 
-(add-hook 'prog-mode-hook 'fly-make)
+(projectile-mode)
+(counsel-mode)
+(counsel-projectile-mode)
+
+(treemacs)
+
+(add-hook 'prog-mode-hook 'flymake-mode)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+
+(add-hook 'ruby-mode-hook 'robe-mode)
+
+(add-hook 'ledger-mode-hook 'flymake-mode)
+
+(global-set-key (kbd "C-z") 'ignore)
