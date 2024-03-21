@@ -1,0 +1,69 @@
+#+TITLE: Primary Emacs Config
+#+AUTHOR: Cole Neville
+#+EMAIL: primary@coleneville.com
+#+OPTIONS: num:nil
+
+* Primary EMACS Config
+** Package Definitions
+*** Package Auto Update
+#+BEGIN_SRC emacs-lisp
+  (use-package auto-package-update
+    :ensure t
+    :commands (auto-package-update-maybe)
+    :custom
+    (auto-package-update-delete-old-versions t)
+    (auto-package-update-hide-results t))
+#+END_SRC
+*** Modus Theme Config and Setup
+#+BEGIN_SRC emacs-lisp
+  (use-package modus-themes
+    :ensure t
+    :custom
+    (modus-themes-common-palette-overrides
+     `((border-mode-line-active bg-mode-line-active)
+       (border-mode-line-inactive bg-mode-line-inactive)))
+    (modus-vivendi-palette-overrides
+     `((bg-main "#161616"))))
+#+END_SRC
+*** Which Key
+#+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :ensure t
+    :commands (which-key-mode)
+    :bind (("M-h" . 'which-key-show-top-level))
+    :custom
+    (which-key-idle-delay 0.5))
+#+END_SRC
+** Main Config
+*** Setting Variables (not for packages)
+#+BEGIN_SRC emacs-lisp
+  (setq visible-bell t
+	ring-bell-function 'ignore)
+
+  (setq inhibit-startup-screen t
+	inhibit-startup-message t)
+
+  (setq display-line-numbers-minor-tick 5
+	  display-line-numbers-major-tick 25
+	  display-line-numbers-width 4)
+#+END_SRC
+*** Run Startup Functions
+#+BEGIN_SRC emacs-lisp
+  (load-theme 'modus-vivendi t)
+  (auto-package-update-maybe)
+#+END_SRC
+*** Enable/Disable Minor Modes
+#+BEGIN_SRC emacs-lisp
+  (menu-bar-mode 1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (tab-bar-mode -1)
+  (line-number-mode -1)
+
+  (which-key-mode)
+#+END_SRC
+*** Hook Setup
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'prog-mode-hook 'fly-make)
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+#+END_SRC
