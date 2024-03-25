@@ -1,9 +1,10 @@
 (use-package auto-package-update
   :ensure t
-  :commands (auto-package-update-maybe)
   :custom
   (auto-package-update-delete-old-versions t)
-  (auto-package-update-hide-results t))
+  (auto-package-update-hide-results t)
+  :config
+  (auto-package-update-maybe))
 
 (use-package modus-themes
   :ensure t
@@ -12,14 +13,17 @@
    `((border-mode-line-active bg-mode-line-active)
      (border-mode-line-inactive bg-mode-line-inactive)))
   (modus-vivendi-palette-overrides
-   `((bg-main "#161616"))))
+   `((bg-main "#161616")))
+  :config
+    (load-theme 'modus-vivendi t))
 
 (use-package which-key
   :ensure t
-  :commands (which-key-mode)
   :bind (("M-h" . which-key-show-top-level))
   :custom
-  (which-key-idle-delay 0.5))
+  (which-key-idle-delay 0.5)
+  :config
+  (which-key-mode))
 
 (use-package ace-window
   :ensure t
@@ -33,8 +37,8 @@
 
 (use-package ledger-mode
   :ensure t
-  :commands (ledger-mode)
-  :hook (ledger-mode . flymake-mode))
+  :hook ((ledger-mode . flymake-mode)
+	 (ledger-mode . display-line-numbers-mode)))
 
 (use-package nix-mode
   :ensure t
@@ -49,12 +53,12 @@
   :commands (docker-compose-mode))
 
 (use-package robe
-  :ensure
-  :commands (robe-mode))
+  :ensure t
+  :hook (ruby-mode . robe-mode))
 
 (use-package rainbow-delimiters
   :ensure t
-  :commands (rainbow-delimiters-mode))
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package company
   :ensure t
@@ -66,37 +70,57 @@
   (company-tooltip-maximum-width 60)
   (company-frontends '(company-pseudo-tooltip-frontend
 		       company-preview-if-just-one-frontend))
-  :commands (global-company-mode))
+  :config
+  (global-company-mode))
 
 (use-package counsel
   :ensure t
   :custom
   (ivy-dynamic-exhibit-delay-ms 250)
-  :commands (counsel-mode
-	     ivy-mode)
   :bind (("C-f" . counsel-grep)
-	 ("C-s" . counsel-projectile-grep)))
+	 ("C-s" . counsel-projectile-grep))
+  :config
+  (ivy-mode)
+  (counsel-mode))
 
 (use-package counsel-projectile
   :ensure t
-  :commands (counsel-projectile-mode))
+  :config
+  (counsel-projectile-mode))
 
 (use-package projectile
   :ensure t
-  :commands (projectile-mode)
   :bind (:map projectile-mode-map
-	      ("C-x p" . projectile-command-map)))
+	      ("C-x p" . projectile-command-map))
+  :config
+  (projectile-mode))
 
 (use-package treemacs
   :ensure t
   :custom
   (treemacs-width 45)
-  :commands (treemacs)
   :config
+  (treemacs)
   (treemacs-follow-mode 1)
   (treemacs-git-commit-diff-mode 1))
 
 (use-package treemacs-projectile :ensure t)
+
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory "~/notes")
+  :commands (org-roam-setup)
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+	 ("C-c n f" . org-roam-node-find)
+	 ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup))
+
+(use-package marginalia
+  :ensure t
+  :config
+  (marginalia-mode))
 
 (setq visible-bell t
       ring-bell-function 'ignore)
@@ -108,8 +132,7 @@
 	display-line-numbers-major-tick 25
 	display-line-numbers-width 4)
 
-(load-theme 'modus-vivendi t)
-(auto-package-update-maybe)
+(setq org-support-shift-select t)
 
 (menu-bar-mode 1)
 (tool-bar-mode -1)
@@ -117,21 +140,10 @@
 (tab-bar-mode -1)
 (line-number-mode -1)
 
-(which-key-mode)
-(global-company-mode)
-
-(projectile-mode)
-(counsel-mode)
-(counsel-projectile-mode)
-
 (treemacs)
 
 (add-hook 'prog-mode-hook 'flymake-mode)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
-(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-
-(add-hook 'ruby-mode-hook 'robe-mode)
-
-(add-hook 'ledger-mode-hook 'flymake-mode)
 
 (global-set-key (kbd "C-z") 'ignore)
+(global-set-key (kbd "C-x C-z") 'ignore)
