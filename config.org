@@ -152,26 +152,10 @@ over the black.
     :custom
     (ivy-dynamic-exhibit-delay-ms 250)
     :bind (("C-f" . counsel-grep)
-	   ("C-s" . counsel-projectile-grep))
+	   ("C-s" . counsel-git-grep))
     :config
     (ivy-mode)
     (counsel-mode))
-
-  (use-package counsel-projectile
-    :ensure t
-    :config
-    (counsel-projectile-mode))
-#+end_src
-
-*** Projectile (Project Functionality)
-
-#+begin_src emacs-lisp
-  (use-package projectile
-    :ensure t
-    :bind (:map projectile-mode-map
-		("C-x p" . projectile-command-map))
-    :config
-    (projectile-mode))
 #+end_src
 
 *** Treemacs (Left Side Directory Tree)
@@ -185,8 +169,6 @@ over the black.
     (treemacs)
     (treemacs-follow-mode 1)
     (treemacs-git-commit-diff-mode 1))
-
-  (use-package treemacs-projectile :ensure t)
 #+end_src
 
 *** Org Roam
@@ -211,6 +193,53 @@ over the black.
     :ensure t
     :config
     (marginalia-mode))
+#+end_src
+
+*** Tree Sitter
+
+#+begin_src emacs-lisp
+  (use-package tree-sitter
+    :ensure t
+    :config
+    (global-tree-sitter-mode)
+    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
+  (use-package treesit-auto
+    :ensure t
+    :config
+    (global-treesit-auto-mode))
+#+end_src
+
+*** Eglot
+
+#+begin_src emacs-lisp
+  (use-package eglot
+    :ensure t
+    :config
+    (add-to-list 'project-vc-extra-root-markers "tsconfig.json"))
+#+end_src
+
+*** aphelia
+
+#+begin_src emacs-lisp
+  (use-package apheleia
+    :ensure t
+    :config
+    (apheleia-global-mode 1))
+#+end_src
+
+*** Terraform
+
+#+begin_src emacs-lisp
+  (use-package terraform-mode
+    :ensure t)
+#+end_src
+
+*** Editor Config
+
+#+begin_src emacs-lisp
+  (use-package editorconfig
+    :ensure t)
 #+end_src
 
 ** Main Config
@@ -239,8 +268,6 @@ over the black.
   (scroll-bar-mode -1)
   (tab-bar-mode -1)
   (line-number-mode -1)
-
-  (treemacs)
 #+END_SRC
 
 *** Hook Setup

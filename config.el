@@ -15,7 +15,7 @@
   (modus-vivendi-palette-overrides
    `((bg-main "#161616")))
   :config
-    (load-theme 'modus-vivendi t))
+  (load-theme 'modus-vivendi t))
 
 (use-package which-key
   :ensure t
@@ -77,23 +77,10 @@
   :ensure t
   :custom
   (ivy-dynamic-exhibit-delay-ms 250)
-  :bind (("C-f" . counsel-grep)
-	 ("C-s" . counsel-projectile-grep))
+  :bind (("C-f" . counsel-grep))
   :config
   (ivy-mode)
   (counsel-mode))
-
-(use-package counsel-projectile
-  :ensure t
-  :config
-  (counsel-projectile-mode))
-
-(use-package projectile
-  :ensure t
-  :bind (:map projectile-mode-map
-	      ("C-x p" . projectile-command-map))
-  :config
-  (projectile-mode))
 
 (use-package treemacs
   :ensure t
@@ -103,8 +90,6 @@
   (treemacs)
   (treemacs-follow-mode 1)
   (treemacs-git-commit-diff-mode 1))
-
-(use-package treemacs-projectile :ensure t)
 
 (use-package org-roam
   :ensure t
@@ -122,6 +107,33 @@
   :config
   (marginalia-mode))
 
+(use-package tree-sitter
+  :ensure t
+  :config
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
+(use-package treesit-auto
+  :ensure t
+  :config
+  (global-treesit-auto-mode))
+
+(use-package eglot
+  :ensure t
+  :config
+  (add-to-list 'project-vc-extra-root-markers "tsconfig.json"))
+
+(use-package apheleia
+  :ensure t
+  :config
+  (apheleia-global-mode 1))
+
+(use-package terraform-mode
+  :ensure t)
+
+(use-package editorconfig
+  :ensure t)
+
 (setq visible-bell t
       ring-bell-function 'ignore)
 
@@ -129,8 +141,8 @@
       inhibit-startup-message t)
 
 (setq display-line-numbers-minor-tick 5
-	display-line-numbers-major-tick 25
-	display-line-numbers-width 4)
+      display-line-numbers-major-tick 25
+      display-line-numbers-width 4)
 
 (setq org-support-shift-select t)
 
@@ -139,8 +151,6 @@
 (scroll-bar-mode -1)
 (tab-bar-mode -1)
 (line-number-mode -1)
-
-(treemacs)
 
 (add-hook 'prog-mode-hook 'flymake-mode)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)

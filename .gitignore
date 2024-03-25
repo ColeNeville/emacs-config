@@ -5,6 +5,7 @@ elpa/
 eshell/
 transient/
 url/
+tree-sitter/
 *~
 .#.*
 ido.last
