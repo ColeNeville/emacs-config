@@ -45,11 +45,10 @@ over the black.
 #+BEGIN_SRC emacs-lisp
   (use-package which-key
     :ensure t
+    :commands (which-key-mode)
     :bind (("M-h" . which-key-show-top-level))
     :custom
-    (which-key-idle-delay 0.5)
-    :config
-    (which-key-mode))
+    (which-key-idle-delay 0.5))
 #+END_SRC
 
 *** Ace Window
@@ -92,16 +91,12 @@ over the black.
 *** Nix Mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package nix-mode
-    :ensure t
-    :commands (nix-mode))
+  (use-package nix-mode :ensure t)
 #+END_SRC
 
 *** Dockerfile Mode
 #+BEGIN_SRC emacs-lisp
-  (use-package dockerfile-mode
-    :ensure t
-    :commands (dockerfile-mode))
+  (use-package dockerfile-mode :ensure t)
 #+END_SRC
 *** Docker Compose Mode
 
@@ -149,13 +144,12 @@ over the black.
 #+begin_src emacs-lisp
   (use-package counsel
     :ensure t
+    :commands (ivy-mode
+	       counsel-mode)
     :custom
     (ivy-dynamic-exhibit-delay-ms 250)
     :bind (("C-f" . counsel-grep)
-	   ("C-s" . counsel-git-grep))
-    :config
-    (ivy-mode)
-    (counsel-mode))
+	   ("C-s" . counsel-git-grep)))
 #+end_src
 
 *** Treemacs (Left Side Directory Tree)
@@ -163,15 +157,17 @@ over the black.
 #+begin_src emacs-lisp
   (use-package treemacs
     :ensure t
+    :commands (treemacs)
     :custom
     (treemacs-width 45)
     :config
-    (treemacs)
     (treemacs-follow-mode 1)
     (treemacs-git-commit-diff-mode 1))
 #+end_src
 
 *** Org Roam
+
+This is not loaded in the initial load of emacs and is instead deferred to key bind.
 
 #+begin_src emacs-lisp
   (use-package org-roam
@@ -213,33 +209,27 @@ over the black.
 *** Eglot
 
 #+begin_src emacs-lisp
-  (use-package eglot
-    :ensure t
-    :config
-    (add-to-list 'project-vc-extra-root-markers "tsconfig.json"))
+  (use-package eglot :ensure t)
 #+end_src
 
-*** aphelia
+*** Aphelia (Code Formatting)
 
 #+begin_src emacs-lisp
   (use-package apheleia
     :ensure t
-    :config
-    (apheleia-global-mode 1))
+    :commands (apheleia-global-mode))
 #+end_src
 
 *** Terraform
 
 #+begin_src emacs-lisp
-  (use-package terraform-mode
-    :ensure t)
+  (use-package terraform-mode :ensure t)
 #+end_src
 
 *** Editor Config
 
 #+begin_src emacs-lisp
-  (use-package editorconfig
-    :ensure t)
+  (use-package editorconfig :ensure t)
 #+end_src
 
 ** Main Config
@@ -258,25 +248,32 @@ over the black.
 	  display-line-numbers-width 4)
 
   (setq org-support-shift-select t)
+
+
+  ;; This is required for eglot to load in cases where the folder is not a git repo
+  (add-to-list 'project-vc-extra-root-markers "tsconfig.json")
 #+END_SRC
 
 *** Enable/Disable Minor Modes
 
 #+BEGIN_SRC emacs-lisp
-  (menu-bar-mode 1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (tab-bar-mode -1)
   (line-number-mode -1)
-#+END_SRC
 
-*** Hook Setup
+  (menu-bar-mode 1)
 
-#+BEGIN_SRC emacs-lisp
+  (ivy-mode 1)
+  (counsel-mode 1)
+  (which-key-mode 1)
+  (apheleia-global-mode 1)
+
+  ;; Load treemacs last so ivy and counsel are setup
+  (treemacs 1)
+
   (add-hook 'prog-mode-hook 'flymake-mode)
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
-
-
 #+END_SRC
 
 *** Keybinds

@@ -15,15 +15,14 @@
   (modus-vivendi-palette-overrides
    `((bg-main "#161616")))
   :config
-  (load-theme 'modus-vivendi t))
+    (load-theme 'modus-vivendi t))
 
 (use-package which-key
   :ensure t
+  :commands (which-key-mode)
   :bind (("M-h" . which-key-show-top-level))
   :custom
-  (which-key-idle-delay 0.5)
-  :config
-  (which-key-mode))
+  (which-key-idle-delay 0.5))
 
 (use-package ace-window
   :ensure t
@@ -40,13 +39,9 @@
   :hook ((ledger-mode . flymake-mode)
 	 (ledger-mode . display-line-numbers-mode)))
 
-(use-package nix-mode
-  :ensure t
-  :commands (nix-mode))
+(use-package nix-mode :ensure t)
 
-(use-package dockerfile-mode
-  :ensure t
-  :commands (dockerfile-mode))
+(use-package dockerfile-mode :ensure t)
 
 (use-package docker-compose-mode
   :ensure t
@@ -75,19 +70,19 @@
 
 (use-package counsel
   :ensure t
+  :commands (ivy-mode
+	     counsel-mode)
   :custom
   (ivy-dynamic-exhibit-delay-ms 250)
-  :bind (("C-f" . counsel-grep))
-  :config
-  (ivy-mode)
-  (counsel-mode))
+  :bind (("C-f" . counsel-grep)
+	 ("C-s" . counsel-git-grep)))
 
 (use-package treemacs
   :ensure t
+  :commands (treemacs)
   :custom
   (treemacs-width 45)
   :config
-  (treemacs)
   (treemacs-follow-mode 1)
   (treemacs-git-commit-diff-mode 1))
 
@@ -118,21 +113,15 @@
   :config
   (global-treesit-auto-mode))
 
-(use-package eglot
-  :ensure t
-  :config
-  (add-to-list 'project-vc-extra-root-markers "tsconfig.json"))
+(use-package eglot :ensure t)
 
 (use-package apheleia
   :ensure t
-  :config
-  (apheleia-global-mode 1))
+  :commands (apheleia-global-mode))
 
-(use-package terraform-mode
-  :ensure t)
+(use-package terraform-mode :ensure t)
 
-(use-package editorconfig
-  :ensure t)
+(use-package editorconfig :ensure t)
 
 (setq visible-bell t
       ring-bell-function 'ignore)
@@ -141,16 +130,29 @@
       inhibit-startup-message t)
 
 (setq display-line-numbers-minor-tick 5
-      display-line-numbers-major-tick 25
-      display-line-numbers-width 4)
+	display-line-numbers-major-tick 25
+	display-line-numbers-width 4)
 
 (setq org-support-shift-select t)
 
-(menu-bar-mode 1)
+
+;; This is required for eglot to load in cases where the folder is not a git repo
+(add-to-list 'project-vc-extra-root-markers "tsconfig.json")
+
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (tab-bar-mode -1)
 (line-number-mode -1)
+
+(menu-bar-mode 1)
+
+(ivy-mode 1)
+(counsel-mode 1)
+(which-key-mode 1)
+(apheleia-global-mode 1)
+
+;; Load treemacs last so ivy and counsel are setup
+(treemacs 1)
 
 (add-hook 'prog-mode-hook 'flymake-mode)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
