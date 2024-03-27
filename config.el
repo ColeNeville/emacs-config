@@ -1,10 +1,11 @@
 (use-package auto-package-update
   :ensure t
+  :commands (auto-package-update-maybe)
   :custom
   (auto-package-update-delete-old-versions t)
-  (auto-package-update-hide-results t)
-  :config
-  (auto-package-update-maybe))
+  (auto-package-update-hide-results t))
+
+(auto-package-update-maybe)
 
 (use-package modus-themes
   :ensure t
@@ -13,9 +14,43 @@
    `((border-mode-line-active bg-mode-line-active)
      (border-mode-line-inactive bg-mode-line-inactive)))
   (modus-vivendi-palette-overrides
-   `((bg-main "#161616")))
-  :config
-    (load-theme 'modus-vivendi t))
+   `((bg-main "#161616"))))
+
+(load-theme 'modus-vivendi t)
+
+(setq visible-bell t
+      ring-bell-function 'ignore)
+
+(setq inhibit-startup-screen t
+      inhibit-startup-message t)
+
+(setq display-line-numbers-minor-tick 5
+      display-line-numbers-major-tick 25
+      display-line-numbers-width 4)
+
+(setq org-support-shift-select t)
+
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(tab-bar-mode -1)
+(line-number-mode -1)
+
+(menu-bar-mode 1)
+
+(add-hook 'prog-mode-hook 'flymake-mode)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+(use-package toc-org
+  :ensure t
+  :commands (toc-org-enable)
+  :hook ((org-mode . toc-org-enable)))
+
+(add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
+
+(use-package org-bullets
+  :ensure t
+  :commands (org-bullets-mode)
+  :hook ((org-mode . (lambda () (org-bullets-mode 1)))))
 
 (use-package which-key
   :ensure t
@@ -24,13 +59,17 @@
   :custom
   (which-key-idle-delay 0.5))
 
+(which-key-mode 1)
+
 (use-package ace-window
   :ensure t
   :bind (("C-x S" . ace-window)))
 
-(use-package docker :ensure t)
-
-(use-package magit :ensure t)
+(use-package magit
+  :ensure t
+  :commands (magit-status magit-get-current-branch)
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 (use-package vterm :ensure t)
 
@@ -123,39 +162,14 @@
 
 (use-package editorconfig :ensure t)
 
-(setq visible-bell t
-      ring-bell-function 'ignore)
-
-(setq inhibit-startup-screen t
-      inhibit-startup-message t)
-
-(setq display-line-numbers-minor-tick 5
-	display-line-numbers-major-tick 25
-	display-line-numbers-width 4)
-
-(setq org-support-shift-select t)
-
-
 ;; This is required for eglot to load in cases where the folder is not a git repo
 (add-to-list 'project-vc-extra-root-markers "tsconfig.json")
 
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-(tab-bar-mode -1)
-(line-number-mode -1)
-
-(menu-bar-mode 1)
-
 (ivy-mode 1)
 (counsel-mode 1)
-(which-key-mode 1)
-(apheleia-global-mode 1)
 
 ;; Load treemacs last so ivy and counsel are setup
 (treemacs 1)
-
-(add-hook 'prog-mode-hook 'flymake-mode)
-(add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 (global-set-key (kbd "C-z") 'ignore)
 (global-set-key (kbd "C-x C-z") 'ignore)

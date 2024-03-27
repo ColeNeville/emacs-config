@@ -1,33 +1,46 @@
 #+TITLE: Primary Emacs Config
 #+AUTHOR: Cole Neville
 #+EMAIL: primary@coleneville.com
-#+OPTIONS: num:nil
 
 This gets packaged into ./config.el by org-babel-eval-in-repl imported by the init.el.
 
-** Package Definitions
+* Table of Contents :toc:
+- [[#initial-setup-and-configuration][Initial Setup and Configuration]]
+  - [[#auto-update-installed-packages][Auto Update Installed Packages]]
+  - [[#load-and-configure-modus-theme][Load and configure Modus Theme]]
+  - [[#default-emacs-confiuration][Default Emacs Confiuration]]
+  - [[#default-modes-setup][Default Modes Setup]]
+- [[#general-editing][General Editing]]
+  - [[#rainbow-delimiters][Rainbow Delimiters]]
+  - [[#company-mode][Company Mode]]
+  - [[#treemacs][Treemacs]]
+- [[#org-mode][Org Mode]]
+  - [[#enabling-table-of-contents][Enabling Table of Contents]]
+  - [[#enabling-org-bullets][Enabling Org Bullets]]
+- [[#which-key][Which Key]]
+- [[#ace-window][Ace Window]]
+- [[#magit-better-gitvc-integration][Magit (Better Git/VC Integration)]]
+- [[#ledger-mode][Ledger Mode]]
+- [[#package-definitions][Package Definitions]]
+  - [[#main-config][Main Config]]
 
-*** Package Auto Update
+* Initial Setup and Configuration
+** Auto Update Installed Packages
 
-Automatic package updating, I am trying this out... Things may break...
-
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package auto-package-update
     :ensure t
+    :commands (auto-package-update-maybe)
     :custom
     (auto-package-update-delete-old-versions t)
-    (auto-package-update-hide-results t)
-    :config
-    (auto-package-update-maybe))
-#+END_SRC
+    (auto-package-update-hide-results t))
 
-*** Modus Theme Config and Setup
+  (auto-package-update-maybe)
+#+end_src
 
-Setup the theme using the modus theme that is built in but using a use-package block to download a more recent version.
-Customization is very minimal just removing the border on the mode-line and setting the base background to a dark grey
-over the black.
+** Load and configure Modus Theme
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package modus-themes
     :ensure t
     :custom
@@ -35,58 +48,112 @@ over the black.
      `((border-mode-line-active bg-mode-line-active)
        (border-mode-line-inactive bg-mode-line-inactive)))
     (modus-vivendi-palette-overrides
-     `((bg-main "#161616")))
-    :config
-      (load-theme 'modus-vivendi t))
-#+END_SRC
+     `((bg-main "#161616"))))
 
-*** Which Key
+  (load-theme 'modus-vivendi t)
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+** Default Emacs Confiuration
+
+#+begin_src emacs-lisp
+  (setq visible-bell t
+        ring-bell-function 'ignore)
+
+  (setq inhibit-startup-screen t
+        inhibit-startup-message t)
+
+  (setq display-line-numbers-minor-tick 5
+        display-line-numbers-major-tick 25
+        display-line-numbers-width 4)
+
+  (setq org-support-shift-select t)
+#+end_src
+
+** Default Modes Setup
+
+#+begin_src emacs-lisp
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (tab-bar-mode -1)
+  (line-number-mode -1)
+
+  (menu-bar-mode 1)
+
+  (add-hook 'prog-mode-hook 'flymake-mode)
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+#+end_src
+
+* General Editing
+
+** Rainbow Delimiters
+
+** Company Mode
+
+** Treemacs
+
+* Org Mode
+** Enabling Table of Contents
+
+#+begin_src emacs-lisp
+  (use-package toc-org
+    :ensure t
+    :commands (toc-org-enable)
+    :hook ((org-mode . toc-org-enable)))
+#+end_src
+
+** Enabling Org Bullets
+
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
+
+  (use-package org-bullets
+    :ensure t
+    :commands (org-bullets-mode)
+    :hook ((org-mode . (lambda () (org-bullets-mode 1)))))
+#+end_src
+
+* Which Key
+
+#+begin_src emacs-lisp
   (use-package which-key
     :ensure t
     :commands (which-key-mode)
     :bind (("M-h" . which-key-show-top-level))
     :custom
     (which-key-idle-delay 0.5))
-#+END_SRC
 
-*** Ace Window
+  (which-key-mode 1)
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+* Ace Window
+
+#+begin_src emacs-lisp
   (use-package ace-window
     :ensure t
     :bind (("C-x S" . ace-window)))
-#+END_SRC
+#+end_src
 
-*** Docker
+* Magit (Better Git/VC Integration)
 
-#+BEGIN_SRC emacs-lisp
-  (use-package docker :ensure t)
+#+begin_src emacs-lisp
+  (use-package magit
+    :ensure t
+    :commands (magit-status magit-get-current-branch)
+    :custom
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+#+end_src
 
-#+END_SRC
+* Ledger Mode
 
-*** Magit (Git Integration)
-
-#+BEGIN_SRC emacs-lisp
-  (use-package magit :ensure t)
-#+END_SRC
-
-*** VTerm
-
-#+BEGIN_SRC emacs-lisp
-  (use-package vterm :ensure t)
-#+END_SRC
-
-*** Ledger Mode
-
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
   (use-package ledger-mode
     :ensure t
+    :mode ("\\.ledger\\'" "\\.journal\\'")
     :hook ((ledger-mode . flymake-mode)
-	   (ledger-mode . display-line-numbers-mode)))
+           (ledger-mode . display-line-numbers-mode)))
+#+end_src
 
-#+END_SRC
+* Package Definitions
 
 *** Nix Mode
 
@@ -237,19 +304,6 @@ This is not loaded in the initial load of emacs and is instead deferred to key b
 *** Setting Variables (not for packages)
 
 #+BEGIN_SRC emacs-lisp
-  (setq visible-bell t
-	ring-bell-function 'ignore)
-
-  (setq inhibit-startup-screen t
-	inhibit-startup-message t)
-
-  (setq display-line-numbers-minor-tick 5
-	  display-line-numbers-major-tick 25
-	  display-line-numbers-width 4)
-
-  (setq org-support-shift-select t)
-
-
   ;; This is required for eglot to load in cases where the folder is not a git repo
   (add-to-list 'project-vc-extra-root-markers "tsconfig.json")
 #+END_SRC
@@ -257,23 +311,11 @@ This is not loaded in the initial load of emacs and is instead deferred to key b
 *** Enable/Disable Minor Modes
 
 #+BEGIN_SRC emacs-lisp
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (tab-bar-mode -1)
-  (line-number-mode -1)
-
-  (menu-bar-mode 1)
-
   (ivy-mode 1)
   (counsel-mode 1)
-  (which-key-mode 1)
-  (apheleia-global-mode 1)
 
   ;; Load treemacs last so ivy and counsel are setup
   (treemacs 1)
-
-  (add-hook 'prog-mode-hook 'flymake-mode)
-  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+END_SRC
 
 *** Keybinds
