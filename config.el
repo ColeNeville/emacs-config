@@ -30,6 +30,8 @@
 
 (setq org-support-shift-select t)
 
+(setq custom-file "~/.config/custom.el")
+
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (tab-bar-mode -1)
@@ -39,6 +41,103 @@
 
 (add-hook 'prog-mode-hook 'flymake-mode)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+(use-package ace-window
+  :ensure t
+  :bind (("C-x S" . ace-window)))
+
+(use-package magit
+  :ensure t
+  :commands (magit-status magit-get-current-branch)
+  :custom
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+
+;; (use-package eglot
+;;   :ensure t
+;;   :commands (eglot
+;;              eglot-ensure)
+;;   :hook ((tsx-ts-mode . eglot-ensure)
+;;          (typescript-ts-mode . eglot-ensure)))
+
+(use-package lsp-mode
+  :ensure t
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+  :commands (lsp
+             lsp-enable-which-key-integration)
+  :hook ((tsx-ts-mode . lsp)
+         (typescript-ts-mode . lsp)
+         (lsp-mode . lsp-enable-which-key-integration)))
+
+(use-package lsp-ui
+  :ensure t
+  :commands (lsp-ui-mode))
+
+(use-package lsp-ivy
+  :ensure t
+  :after (lsp-mode
+          ivy)
+  :commands (lsp-ivy-workspace-symbol))
+
+(use-package lsp-treemacs
+  :ensure t
+  :after (lsp-mode
+          treemacs)
+  :commands (lsp-treemacs-errors-list))
+
+(use-package counsel
+  :ensure t
+  :commands (ivy-mode
+             counsel-mode)
+  :custom
+  (ivy-dynamic-exhibit-delay-ms 250)
+  :bind (("C-f" . counsel-grep)
+         ("C-s" . counsel-git-grep)))
+
+(ivy-mode 1)
+(counsel-mode 1)
+
+(use-package which-key
+  :ensure t
+  :commands (which-key-mode)
+  :bind (("M-h" . which-key-show-top-level))
+  :custom
+  (which-key-idle-delay 0.5))
+
+(which-key-mode 1)
+
+(use-package tree-sitter
+  :ensure t
+  :mode (("\\.ts\\'" . typescript-ts-mode)
+         ("\\.tsx\\'" . tsx-ts-mode))
+  :commands (global-tree-sitter-mode
+             tree-sitter-hl-mode)
+  :hook (tree-sitter-after-on . tree-sitter-hl-mode))
+
+(use-package treesit-auto
+  :ensure t
+  :commands (global-treesit-auto-mode))
+
+(global-tree-sitter-mode)
+(global-treesit-auto-mode)
+
+(use-package ledger-mode
+  :ensure t
+  :mode ("\\.ledger\\'" "\\.journal\\'")
+  :hook ((ledger-mode . flymake-mode)
+         (ledger-mode . display-line-numbers-mode)))
+
+(use-package nix-mode
+  :ensure t
+  :mode ("\\.nix\\'"))
+
+(use-package dockerfile-mode
+  :ensure t
+  :mode ("Dockerfile"))
+
+(use-package docker-compose-mode
+  :ensure t
+  :mode ("docker-compose\\.yml"))
 
 (use-package toc-org
   :ensure t
@@ -52,39 +151,20 @@
   :commands (org-bullets-mode)
   :hook ((org-mode . (lambda () (org-bullets-mode 1)))))
 
-(use-package which-key
+(use-package org-roam
   :ensure t
-  :commands (which-key-mode)
-  :bind (("M-h" . which-key-show-top-level))
   :custom
-  (which-key-idle-delay 0.5))
+  (org-roam-directory "~/notes")
+  :commands (org-roam-setup)
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert))
+  :config
+  (org-roam-setup))
 
-(which-key-mode 1)
 
-(use-package ace-window
-  :ensure t
-  :bind (("C-x S" . ace-window)))
 
-(use-package magit
-  :ensure t
-  :commands (magit-status magit-get-current-branch)
-  :custom
-  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-(use-package vterm :ensure t)
-
-(use-package ledger-mode
-  :ensure t
-  :hook ((ledger-mode . flymake-mode)
-	 (ledger-mode . display-line-numbers-mode)))
-
-(use-package nix-mode :ensure t)
-
-(use-package dockerfile-mode :ensure t)
-
-(use-package docker-compose-mode
-  :ensure t
-  :commands (docker-compose-mode))
 
 (use-package robe
   :ensure t
@@ -107,15 +187,6 @@
   :config
   (global-company-mode))
 
-(use-package counsel
-  :ensure t
-  :commands (ivy-mode
-	     counsel-mode)
-  :custom
-  (ivy-dynamic-exhibit-delay-ms 250)
-  :bind (("C-f" . counsel-grep)
-	 ("C-s" . counsel-git-grep)))
-
 (use-package treemacs
   :ensure t
   :commands (treemacs)
@@ -125,34 +196,14 @@
   (treemacs-follow-mode 1)
   (treemacs-git-commit-diff-mode 1))
 
-(use-package org-roam
-  :ensure t
-  :custom
-  (org-roam-directory "~/notes")
-  :commands (org-roam-setup)
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-	 ("C-c n f" . org-roam-node-find)
-	 ("C-c n i" . org-roam-node-insert))
-  :config
-  (org-roam-setup))
+
 
 (use-package marginalia
   :ensure t
   :config
   (marginalia-mode))
 
-(use-package tree-sitter
-  :ensure t
-  :config
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
-(use-package treesit-auto
-  :ensure t
-  :config
-  (global-treesit-auto-mode))
-
-(use-package eglot :ensure t)
 
 (use-package apheleia
   :ensure t

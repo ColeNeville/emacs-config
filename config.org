@@ -4,27 +4,44 @@
 
 This gets packaged into ./config.el by org-babel-eval-in-repl imported by the init.el.
 
-* Table of Contents :toc:
+* Table of Contents :toc_3:
 - [[#initial-setup-and-configuration][Initial Setup and Configuration]]
   - [[#auto-update-installed-packages][Auto Update Installed Packages]]
   - [[#load-and-configure-modus-theme][Load and configure Modus Theme]]
   - [[#default-emacs-confiuration][Default Emacs Confiuration]]
   - [[#default-modes-setup][Default Modes Setup]]
-- [[#general-editing][General Editing]]
+- [[#utilities][Utilities]]
+  - [[#ace-window-window-management][Ace Window (Window Management)]]
+  - [[#magit-better-gitvc-integration][Magit (Better Git/VC Integration)]]
+  - [[#eglot-lsp-functionality][Eglot (LSP Functionality)]]
+  - [[#treemacs-left-side-directory-tree][Treemacs (Left Side Directory Tree)]]
+  - [[#lsp-mode][LSP Mode]]
+- [[#new-global-minor-modes][New Global Minor Modes]]
+  - [[#counselivy-searching][Counsel/Ivy (Searching)]]
+  - [[#which-key-mode][Which Key Mode]]
+  - [[#company-mode-code-completion][Company Mode (Code Completion)]]
   - [[#rainbow-delimiters][Rainbow Delimiters]]
-  - [[#company-mode][Company Mode]]
-  - [[#treemacs][Treemacs]]
-- [[#org-mode][Org Mode]]
-  - [[#enabling-table-of-contents][Enabling Table of Contents]]
-  - [[#enabling-org-bullets][Enabling Org Bullets]]
-- [[#which-key][Which Key]]
-- [[#ace-window][Ace Window]]
-- [[#magit-better-gitvc-integration][Magit (Better Git/VC Integration)]]
-- [[#ledger-mode][Ledger Mode]]
-- [[#package-definitions][Package Definitions]]
+  - [[#marginalia][Marginalia]]
+- [[#new-major-modes][New Major Modes]]
+  - [[#tree-sitter-many-modes][Tree Sitter (Many Modes)]]
+  - [[#ledger-mode][Ledger Mode]]
+  - [[#nix-mode][Nix Mode]]
+  - [[#dockerfile-mode][Dockerfile Mode]]
+  - [[#docker-compose-mode][Docker Compose Mode]]
+  - [[#terraform][Terraform]]
+- [[#built-in-major-mode-extras-and-configuration][Built-in Major Mode Extras and Configuration]]
+  - [[#org-mode][Org Mode]]
+    - [[#enabling-table-of-contents][Enabling Table of Contents]]
+    - [[#enabling-org-bullets][Enabling Org Bullets]]
+    - [[#enable-and-setup-org-roam][Enable and Setup Org Roam]]
+  - [[#ruby-ts-mode][Ruby (TS) Mode]]
+    - [[#robe-mode][Robe Mode]]
+- [[#package-definitions-old-and-to-be-moved][Package Definitions (old and to be moved)]]
   - [[#main-config][Main Config]]
+    - [[#keybinds][Keybinds]]
 
 * Initial Setup and Configuration
+
 ** Auto Update Installed Packages
 
 #+begin_src emacs-lisp
@@ -37,6 +54,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 
   (auto-package-update-maybe)
 #+end_src
+
 
 ** Load and configure Modus Theme
 
@@ -53,6 +71,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (load-theme 'modus-vivendi t)
 #+end_src
 
+
 ** Default Emacs Confiuration
 
 #+begin_src emacs-lisp
@@ -67,7 +86,10 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
         display-line-numbers-width 4)
 
   (setq org-support-shift-select t)
+
+  (setq custom-file "~/.config/custom.el")
 #+end_src
+
 
 ** Default Modes Setup
 
@@ -83,36 +105,110 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+end_src
 
-* General Editing
 
-** Rainbow Delimiters
+* Utilities
 
-** Company Mode
-
-** Treemacs
-
-* Org Mode
-** Enabling Table of Contents
+** Ace Window (Window Management)
 
 #+begin_src emacs-lisp
-  (use-package toc-org
+  (use-package ace-window
     :ensure t
-    :commands (toc-org-enable)
-    :hook ((org-mode . toc-org-enable)))
+    :bind (("C-x S" . ace-window)))
 #+end_src
 
-** Enabling Org Bullets
+
+** Magit (Better Git/VC Integration)
 
 #+begin_src emacs-lisp
-  (add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
-
-  (use-package org-bullets
+  (use-package magit
     :ensure t
-    :commands (org-bullets-mode)
-    :hook ((org-mode . (lambda () (org-bullets-mode 1)))))
+    :commands (magit-status magit-get-current-branch)
+    :custom
+    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
 
-* Which Key
+
+** Eglot (LSP Functionality)
+
+#+begin_src emacs-lisp
+  ;; (use-package eglot
+  ;;   :ensure t
+  ;;   :commands (eglot
+  ;;              eglot-ensure)
+  ;;   :hook ((tsx-ts-mode . eglot-ensure)
+  ;;          (typescript-ts-mode . eglot-ensure)))
+#+end_src
+
+
+** Treemacs (Left Side Directory Tree)
+
+#+begin_src emacs-lisp
+  (use-package treemacs
+    :ensure t
+    :commands (treemacs
+               treemacs-follow-mode
+               treemacs-git-commit-diff-mode)
+    :custom
+    (treemacs-width 45)
+    :config
+    (treemacs-follow-mode 1)
+    (treemacs-git-commit-diff-mode 1))
+
+  (treemacs 1)
+#+end_src
+
+
+** LSP Mode
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :ensure t
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    :commands (lsp
+               lsp-enable-which-key-integration)
+    :hook ((tsx-ts-mode . lsp)
+           (typescript-ts-mode . lsp)
+           (lsp-mode . lsp-enable-which-key-integration)))
+
+  (use-package lsp-ui
+    :ensure t
+    :commands (lsp-ui-mode))
+
+  (use-package lsp-ivy
+    :ensure t
+    :after (lsp-mode
+            ivy)
+    :commands (lsp-ivy-workspace-symbol))
+
+  (use-package lsp-treemacs
+    :ensure t
+    :after (lsp-mode
+            treemacs)
+    :commands (lsp-treemacs-errors-list))
+#+end_src
+
+
+* New Global Minor Modes
+
+** Counsel/Ivy (Searching)
+
+#+begin_src emacs-lisp
+  (use-package counsel
+    :ensure t
+    :commands (ivy-mode
+               counsel-mode)
+    :custom
+    (ivy-dynamic-exhibit-delay-ms 250)
+    :bind (("C-f" . counsel-grep)
+           ("C-s" . counsel-git-grep)))
+
+  (ivy-mode 1)
+  (counsel-mode 1)
+#+end_src
+
+
+** Which Key Mode
 
 #+begin_src emacs-lisp
   (use-package which-key
@@ -125,25 +221,70 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (which-key-mode 1)
 #+end_src
 
-* Ace Window
+
+** Company Mode (Code Completion)
 
 #+begin_src emacs-lisp
-  (use-package ace-window
+  (use-package company
     :ensure t
-    :bind (("C-x S" . ace-window)))
-#+end_src
-
-* Magit (Better Git/VC Integration)
-
-#+begin_src emacs-lisp
-  (use-package magit
-    :ensure t
-    :commands (magit-status magit-get-current-branch)
+    :commands (global-company-mode)
     :custom
-    (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
+    (company-tooltip-align-annotations t)
+    (company-tooltip-display 'lines)
+    (company-tooltip-flip-when-above t)
+    (company-tooltip-margin 3)
+    (company-tooltip-maximum-width 60)
+    (company-frontends '(company-pseudo-tooltip-frontend
+                         company-preview-if-just-one-frontend)))
+
+  (global-company-mode 1)
 #+end_src
 
-* Ledger Mode
+
+** Rainbow Delimiters
+
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+
+** Marginalia
+
+#+begin_src emacs-lisp
+  (use-package marginalia
+    :ensure t
+    :commands (marginalia-mode))
+
+  (marginalia-mode)
+#+end_src
+
+
+* New Major Modes
+
+** Tree Sitter (Many Modes)
+
+#+begin_src emacs-lisp
+  (use-package tree-sitter
+    :ensure t
+    :mode (("\\.ts\\'" . typescript-ts-mode)
+           ("\\.tsx\\'" . tsx-ts-mode)
+           ("\\.rb\\'" . ruby-ts-mode)
+    :commands (global-tree-sitter-mode
+               tree-sitter-hl-mode)
+    :hook (tree-sitter-after-on . tree-sitter-hl-mode))
+
+  (use-package treesit-auto
+    :ensure t
+    :commands (global-treesit-auto-mode))
+
+  (global-tree-sitter-mode)
+  (global-treesit-auto-mode)
+#+end_src
+
+
+** Ledger Mode
 
 #+begin_src emacs-lisp
   (use-package ledger-mode
@@ -153,88 +294,69 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
            (ledger-mode . display-line-numbers-mode)))
 #+end_src
 
-* Package Definitions
 
-*** Nix Mode
+** Nix Mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package nix-mode :ensure t)
+  (use-package nix-mode
+    :ensure t
+    :mode ("\\.nix\\'"))
 #+END_SRC
 
-*** Dockerfile Mode
-#+BEGIN_SRC emacs-lisp
-  (use-package dockerfile-mode :ensure t)
-#+END_SRC
-*** Docker Compose Mode
+
+** Dockerfile Mode
+
+#+begin_src emacs-lisp
+  (use-package dockerfile-mode
+    :ensure t
+    :mode ("Dockerfile"))
+#+end_src
+
+
+** Docker Compose Mode
 
 #+begin_src emacs-lisp
   (use-package docker-compose-mode
     :ensure t
-    :commands (docker-compose-mode))
+    :mode ("docker-compose\\.yml"))
 #+end_src
 
-*** Robe (Enhanced Ruby Mode)
+
+** Terraform
 
 #+begin_src emacs-lisp
-  (use-package robe
+  (use-package terraform-mode
     :ensure t
-    :hook (ruby-mode . robe-mode))
+    :mode ("\\.tf//'"))
 #+end_src
 
-*** Rainbow Delimiters
+
+
+* Built-in Major Mode Extras and Configuration
+
+** Org Mode
+
+*** Enabling Table of Contents
 
 #+begin_src emacs-lisp
-  (use-package rainbow-delimiters
+  (use-package toc-org
     :ensure t
-    :hook (prog-mode . rainbow-delimiters-mode))
+    :commands (toc-org-enable)
+    :hook ((org-mode . toc-org-enable)))
 #+end_src
 
-*** Company Mode (Code Completion)
+*** Enabling Org Bullets
 
 #+begin_src emacs-lisp
-  (use-package company
+  (add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
+
+  (use-package org-bullets
     :ensure t
-    :custom
-    (company-tooltip-align-annotations t)
-    (company-tooltip-display 'lines)
-    (company-tooltip-flip-when-above t)
-    (company-tooltip-margin 3)
-    (company-tooltip-maximum-width 60)
-    (company-frontends '(company-pseudo-tooltip-frontend
-			 company-preview-if-just-one-frontend))
-    :config
-    (global-company-mode))
+    :commands (org-bullets-mode)
+    :hook ((org-mode . (lambda () (org-bullets-mode 1)))))
 #+end_src
 
-*** Counsel/Ivy (Searching)
-
-#+begin_src emacs-lisp
-  (use-package counsel
-    :ensure t
-    :commands (ivy-mode
-	       counsel-mode)
-    :custom
-    (ivy-dynamic-exhibit-delay-ms 250)
-    :bind (("C-f" . counsel-grep)
-	   ("C-s" . counsel-git-grep)))
-#+end_src
-
-*** Treemacs (Left Side Directory Tree)
-
-#+begin_src emacs-lisp
-  (use-package treemacs
-    :ensure t
-    :commands (treemacs)
-    :custom
-    (treemacs-width 45)
-    :config
-    (treemacs-follow-mode 1)
-    (treemacs-git-commit-diff-mode 1))
-#+end_src
-
-*** Org Roam
-
-This is not loaded in the initial load of emacs and is instead deferred to key bind.
+*** Enable and Setup Org Roam
 
 #+begin_src emacs-lisp
   (use-package org-roam
@@ -243,80 +365,28 @@ This is not loaded in the initial load of emacs and is instead deferred to key b
     (org-roam-directory "~/notes")
     :commands (org-roam-setup)
     :bind (("C-c n l" . org-roam-buffer-toggle)
-	   ("C-c n f" . org-roam-node-find)
-	   ("C-c n i" . org-roam-node-insert))
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert))
     :config
     (org-roam-setup))
 #+end_src
 
-*** Marginalia
+
+** Ruby (TS) Mode
+
+*** Robe Mode
 
 #+begin_src emacs-lisp
-  (use-package marginalia
+  (use-package robe
     :ensure t
-    :config
-    (marginalia-mode))
+    :hook ((ruby-mode . robe-mode)
+           (ruby-ts-mode . robe-mode)))
 #+end_src
 
-*** Tree Sitter
 
-#+begin_src emacs-lisp
-  (use-package tree-sitter
-    :ensure t
-    :config
-    (global-tree-sitter-mode)
-    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
-  (use-package treesit-auto
-    :ensure t
-    :config
-    (global-treesit-auto-mode))
-#+end_src
-
-*** Eglot
-
-#+begin_src emacs-lisp
-  (use-package eglot :ensure t)
-#+end_src
-
-*** Aphelia (Code Formatting)
-
-#+begin_src emacs-lisp
-  (use-package apheleia
-    :ensure t
-    :commands (apheleia-global-mode))
-#+end_src
-
-*** Terraform
-
-#+begin_src emacs-lisp
-  (use-package terraform-mode :ensure t)
-#+end_src
-
-*** Editor Config
-
-#+begin_src emacs-lisp
-  (use-package editorconfig :ensure t)
-#+end_src
+* Package Definitions (old and to be moved)
 
 ** Main Config
-
-*** Setting Variables (not for packages)
-
-#+BEGIN_SRC emacs-lisp
-  ;; This is required for eglot to load in cases where the folder is not a git repo
-  (add-to-list 'project-vc-extra-root-markers "tsconfig.json")
-#+END_SRC
-
-*** Enable/Disable Minor Modes
-
-#+BEGIN_SRC emacs-lisp
-  (ivy-mode 1)
-  (counsel-mode 1)
-
-  ;; Load treemacs last so ivy and counsel are setup
-  (treemacs 1)
-#+END_SRC
 
 *** Keybinds
 

@@ -20,3 +20,4 @@ srecode-map.el
 .org-id-locations
 org-roam.db
 bookmarks
+.lsp-session-v1
