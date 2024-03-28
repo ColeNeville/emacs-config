@@ -42,12 +42,20 @@
 (add-hook 'prog-mode-hook 'flymake-mode)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
-(global-set-key (kbd "C-z") nil)
-(global-set-key (kbd "C-x C-z") nil)
+(global-unset-key (kbd "C-x C-z"))
+
+(global-set-key [escape] 'keyboard-escape-quit)
+
+(define-prefix-command 'personal-prefix-map)
+(global-set-key (kbd "C-z") 'personal-prefix-map)
 
 (use-package ace-window
   :ensure t
-  :bind (("C-x S" . ace-window)))
+  :bind (:map personal-prefix-map
+              ("s" . ace-window)
+              ("S" . ace-swap-window)))
+
+(use-package diminish :ensure t)
 
 (use-package magit
   :ensure t
@@ -55,15 +63,9 @@
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
-;; (use-package eglot
-;;   :ensure t
-;;   :commands (eglot
-;;              eglot-ensure)
-;;   :hook ((tsx-ts-mode . eglot-ensure)
-;;          (typescript-ts-mode . eglot-ensure)))
-
 (use-package treemacs
   :ensure t
+  :after (counsel)
   :commands (treemacs
              treemacs-follow-mode
              treemacs-git-commit-diff-mode)
@@ -79,12 +81,12 @@
 (use-package lsp-mode
   :ensure t
   :init
-  (setq lsp-keymap-prefix "C-c l")
+  (setq lsp-keymap-prefix "C-z l")
   :commands (lsp
-             lsp-enable-which-key-integration)
+	         lsp-enable-which-key-integration)
   :hook ((tsx-ts-mode . lsp)
-         (typescript-ts-mode . lsp)
-         (lsp-mode . lsp-enable-which-key-integration)))
+	     (typescript-ts-mode . lsp)
+	     (lsp-mode . lsp-enable-which-key-integration)))
 
 (use-package lsp-ui
   :ensure t
@@ -93,25 +95,30 @@
 (use-package lsp-ivy
   :ensure t
   :after (lsp-mode
-          ivy)
+	  ivy)
   :commands (lsp-ivy-workspace-symbol))
 
 (use-package lsp-treemacs
   :ensure t
   :after (lsp-mode
-          treemacs)
+	  treemacs)
   :commands (lsp-treemacs-errors-list))
+
+(use-package ivy
+  :ensure t
+  :diminish t
+  :commands (ivy-mode)
+  :custom
+  (ivy-use-virtual-buffers t)
+  (ivy-count-format "(%d/%d) ")
+  :bind (:map ivy-minibuffer-map
+	      ("S-SPC" . nil)))
 
 (use-package counsel
   :ensure t
-  :commands (ivy-mode
-             counsel-mode)
-  :custom
-  (ivy-dynamic-exhibit-delay-ms 250)
-  :bind (("C-f" . counsel-grep)
-         ("C-s" . counsel-git-grep)
-         :map ivy-minibuffer-map
-         ("S-SPC" . nil)))
+  :diminish t
+  :after ivy
+  :commands (counsel-mode))
 
 (ivy-mode 1)
 (counsel-mode 1)
@@ -119,6 +126,7 @@
 
 (use-package which-key
   :ensure t
+  :diminish t
   :commands (which-key-mode)
   :bind (("M-h" . which-key-show-top-level))
   :custom
@@ -188,12 +196,15 @@
   :ensure t
   :mode ("\\.tf//'"))
 
+(require 'org-tempo)
+
+(add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
+(eval-after-load 'org-indent '(diminsh 'org-indent-mode))
+
 (use-package toc-org
   :ensure t
   :commands (toc-org-enable)
   :hook ((org-mode . toc-org-enable)))
-
-(add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
 
 (use-package org-bullets
   :ensure t
@@ -209,14 +220,21 @@
    '(("d" "default" entry
       (file "~/.config/emacs/org-roam/templates/daily.org")
       :target (file+head "%<%Y-%m-%d>.org"
-                         "#+TITLE: %<%Y-%m-%d>\n"))))
-  :commands (org-roam-setup)
-  :bind (("C-c n l" . org-roam-buffer-toggle)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert)
-         ("C-c n t" . org-roam-dailies-capture-today)))
+			 "#+TITLE: %<%Y-%m-%d>\n"))))
+  :commands (org-roam-setup))
+
+(defun cn/org-roam-dailies-goto-today
+    (org-roam-dailies-capture-today :goto t))
 
 (org-roam-setup)
+(define-key personal-prefix-map
+	    "nb" 'org-roam-buffer-toggle)
+(define-key personal-prefix-map
+	    "ni" 'org-roam-node-insert)
+(define-key personal-prefix-map
+	    "nf" 'org-roam-node-find)
+(define-key personal-prefix-map
+	    "nd" 'cn/org-roam-dailies-goto-today)
 
 (use-package robe
   :ensure t

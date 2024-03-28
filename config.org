@@ -1,4 +1,4 @@
-#+TITLE: Primary Emacs Config
+#+TITLE: Cole's Emacs Config
 #+AUTHOR: Cole Neville
 #+EMAIL: primary@coleneville.com
 
@@ -10,11 +10,14 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   - [[#load-and-configure-modus-theme][Load and configure Modus Theme]]
   - [[#default-emacs-confiuration][Default Emacs Confiuration]]
   - [[#default-modes-setup][Default Modes Setup]]
-  - [[#remove-default-keybinds][Remove Default Keybinds]]
+  - [[#keybindings][Keybindings]]
+    - [[#remove-default-keybinds][Remove Default Keybinds]]
+    - [[#minibuffer-escape][Minibuffer Escape]]
+    - [[#create-a-user-defined-global-prefix][Create a User-defined Global Prefix]]
 - [[#utilities][Utilities]]
   - [[#ace-window-window-management][Ace Window (Window Management)]]
+  - [[#diminish-hide-from-modeline][Diminish (Hide from Modeline)]]
   - [[#magit-better-gitvc-integration][Magit (Better Git/VC Integration)]]
-  - [[#eglot-lsp-functionality][Eglot (LSP Functionality)]]
   - [[#treemacs-left-side-directory-tree][Treemacs (Left Side Directory Tree)]]
   - [[#lsp-mode][LSP Mode]]
 - [[#new-global-minor-modes][New Global Minor Modes]]
@@ -32,8 +35,10 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   - [[#terraform][Terraform]]
 - [[#built-in-major-mode-extras-and-configuration][Built-in Major Mode Extras and Configuration]]
   - [[#org-mode][Org Mode]]
-    - [[#enabling-table-of-contents][Enabling Table of Contents]]
-    - [[#enabling-org-bullets][Enabling Org Bullets]]
+    - [[#enable-org-tempo][Enable Org Tempo]]
+    - [[#enable-org-indent-mode][Enable Org Indent Mode]]
+    - [[#enable-table-of-contents][Enable Table of Contents]]
+    - [[#enable-org-bullets][Enable Org Bullets]]
     - [[#enable-and-setup-org-roam][Enable and Setup Org Roam]]
   - [[#ruby-tree-sitter-mode][Ruby (Tree Sitter) Mode]]
     - [[#robe-mode][Robe Mode]]
@@ -100,11 +105,25 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+end_src
 
-** Remove Default Keybinds
+** Keybindings
+
+*** Remove Default Keybinds
 
 #+begin_src emacs-lisp
-  (global-set-key (kbd "C-z") nil)
-  (global-set-key (kbd "C-x C-z") nil)
+  (global-unset-key (kbd "C-x C-z"))
+#+end_src
+
+*** Minibuffer Escape
+
+#+begin_src emacs-lisp
+  (global-set-key [escape] 'keyboard-escape-quit)
+#+end_src
+
+*** Create a User-defined Global Prefix
+
+#+begin_src emacs-lisp
+  (define-prefix-command 'personal-prefix-map)
+  (global-set-key (kbd "C-z") 'personal-prefix-map)
 #+end_src
 
 * Utilities
@@ -114,7 +133,15 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 #+begin_src emacs-lisp
   (use-package ace-window
     :ensure t
-    :bind (("C-x S" . ace-window)))
+    :bind (:map personal-prefix-map
+                ("s" . ace-window)
+                ("S" . ace-swap-window)))
+#+end_src
+
+** Diminish (Hide from Modeline)
+
+#+begin_src emacs-lisp
+  (use-package diminish :ensure t)
 #+end_src
 
 ** Magit (Better Git/VC Integration)
@@ -127,22 +154,13 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
 
-** Eglot (LSP Functionality)
-
-#+begin_src emacs-lisp
-  ;; (use-package eglot
-  ;;   :ensure t
-  ;;   :commands (eglot
-  ;;              eglot-ensure)
-  ;;   :hook ((tsx-ts-mode . eglot-ensure)
-  ;;          (typescript-ts-mode . eglot-ensure)))
-#+end_src
 
 ** Treemacs (Left Side Directory Tree)
 
 #+begin_src emacs-lisp
   (use-package treemacs
     :ensure t
+    :after (counsel)
     :commands (treemacs
                treemacs-follow-mode
                treemacs-git-commit-diff-mode)
@@ -162,12 +180,12 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (use-package lsp-mode
     :ensure t
     :init
-    (setq lsp-keymap-prefix "C-c l")
+    (setq lsp-keymap-prefix "C-z l")
     :commands (lsp
-               lsp-enable-which-key-integration)
+	           lsp-enable-which-key-integration)
     :hook ((tsx-ts-mode . lsp)
-           (typescript-ts-mode . lsp)
-           (lsp-mode . lsp-enable-which-key-integration)))
+	       (typescript-ts-mode . lsp)
+	       (lsp-mode . lsp-enable-which-key-integration)))
 
   (use-package lsp-ui
     :ensure t
@@ -176,30 +194,36 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (use-package lsp-ivy
     :ensure t
     :after (lsp-mode
-            ivy)
+	    ivy)
     :commands (lsp-ivy-workspace-symbol))
 
   (use-package lsp-treemacs
     :ensure t
     :after (lsp-mode
-            treemacs)
+	    treemacs)
     :commands (lsp-treemacs-errors-list))
 #+end_src
 
 * New Global Minor Modes
+
 ** Counsel/Ivy (Searching)
 
 #+begin_src emacs-lisp
+  (use-package ivy
+    :ensure t
+    :diminish t
+    :commands (ivy-mode)
+    :custom
+    (ivy-use-virtual-buffers t)
+    (ivy-count-format "(%d/%d) ")
+    :bind (:map ivy-minibuffer-map
+		("S-SPC" . nil)))
+
   (use-package counsel
     :ensure t
-    :commands (ivy-mode
-               counsel-mode)
-    :custom
-    (ivy-dynamic-exhibit-delay-ms 250)
-    :bind (("C-f" . counsel-grep)
-           ("C-s" . counsel-git-grep)
-           :map ivy-minibuffer-map
-           ("S-SPC" . nil)))
+    :diminish t
+    :after ivy
+    :commands (counsel-mode))
 
   (ivy-mode 1)
   (counsel-mode 1)
@@ -211,6 +235,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 #+begin_src emacs-lisp
   (use-package which-key
     :ensure t
+    :diminish t
     :commands (which-key-mode)
     :bind (("M-h" . which-key-show-top-level))
     :custom
@@ -320,9 +345,23 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 #+end_src
 
 * Built-in Major Mode Extras and Configuration
+
 ** Org Mode
 
-*** Enabling Table of Contents
+*** Enable Org Tempo
+
+#+begin_src emacs-lisp
+  (require 'org-tempo)
+#+end_src
+
+*** Enable Org Indent Mode
+
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
+  (eval-after-load 'org-indent '(diminsh 'org-indent-mode))
+#+end_src
+
+*** Enable Table of Contents
 
 #+begin_src emacs-lisp
   (use-package toc-org
@@ -331,11 +370,9 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :hook ((org-mode . toc-org-enable)))
 #+end_src
 
-*** Enabling Org Bullets
+*** Enable Org Bullets
 
 #+begin_src emacs-lisp
-  (add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
-
   (use-package org-bullets
     :ensure t
     :commands (org-bullets-mode)
@@ -352,16 +389,23 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     (org-roam-dailies-directory "daily/")
     (org-roam-dailies-capture-template
      '(("d" "default" entry
-        (file "~/.config/emacs/org-roam/templates/daily.org")
-        :target (file+head "%<%Y-%m-%d>.org"
-                           "#+TITLE: %<%Y-%m-%d>\n"))))
-    :commands (org-roam-setup)
-    :bind (("C-c n l" . org-roam-buffer-toggle)
-           ("C-c n f" . org-roam-node-find)
-           ("C-c n i" . org-roam-node-insert)
-           ("C-c n t" . org-roam-dailies-capture-today)))
+	(file "~/.config/emacs/org-roam/templates/daily.org")
+	:target (file+head "%<%Y-%m-%d>.org"
+			   "#+TITLE: %<%Y-%m-%d>\n"))))
+    :commands (org-roam-setup))
+
+  (defun cn/org-roam-dailies-goto-today
+      (org-roam-dailies-capture-today :goto t))
 
   (org-roam-setup)
+  (define-key personal-prefix-map
+	      "nb" 'org-roam-buffer-toggle)
+  (define-key personal-prefix-map
+	      "ni" 'org-roam-node-insert)
+  (define-key personal-prefix-map
+	      "nf" 'org-roam-node-find)
+  (define-key personal-prefix-map
+	      "nd" 'cn/org-roam-dailies-goto-today)
 #+end_src
 
 ** Ruby (Tree Sitter) Mode
