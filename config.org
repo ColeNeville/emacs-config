@@ -10,6 +10,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   - [[#load-and-configure-modus-theme][Load and configure Modus Theme]]
   - [[#default-emacs-confiuration][Default Emacs Confiuration]]
   - [[#default-modes-setup][Default Modes Setup]]
+  - [[#remove-default-keybinds][Remove Default Keybinds]]
 - [[#utilities][Utilities]]
   - [[#ace-window-window-management][Ace Window (Window Management)]]
   - [[#magit-better-gitvc-integration][Magit (Better Git/VC Integration)]]
@@ -34,11 +35,8 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     - [[#enabling-table-of-contents][Enabling Table of Contents]]
     - [[#enabling-org-bullets][Enabling Org Bullets]]
     - [[#enable-and-setup-org-roam][Enable and Setup Org Roam]]
-  - [[#ruby-ts-mode][Ruby (TS) Mode]]
+  - [[#ruby-tree-sitter-mode][Ruby (Tree Sitter) Mode]]
     - [[#robe-mode][Robe Mode]]
-- [[#package-definitions-old-and-to-be-moved][Package Definitions (old and to be moved)]]
-  - [[#main-config][Main Config]]
-    - [[#keybinds][Keybinds]]
 
 * Initial Setup and Configuration
 
@@ -55,7 +53,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (auto-package-update-maybe)
 #+end_src
 
-
 ** Load and configure Modus Theme
 
 #+begin_src emacs-lisp
@@ -70,7 +67,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 
   (load-theme 'modus-vivendi t)
 #+end_src
-
 
 ** Default Emacs Confiuration
 
@@ -90,7 +86,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (setq custom-file "~/.config/custom.el")
 #+end_src
 
-
 ** Default Modes Setup
 
 #+begin_src emacs-lisp
@@ -105,6 +100,12 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+end_src
 
+** Remove Default Keybinds
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-z") nil)
+  (global-set-key (kbd "C-x C-z") nil)
+#+end_src
 
 * Utilities
 
@@ -116,7 +117,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :bind (("C-x S" . ace-window)))
 #+end_src
 
-
 ** Magit (Better Git/VC Integration)
 
 #+begin_src emacs-lisp
@@ -126,7 +126,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
-
 
 ** Eglot (LSP Functionality)
 
@@ -138,7 +137,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   ;;   :hook ((tsx-ts-mode . eglot-ensure)
   ;;          (typescript-ts-mode . eglot-ensure)))
 #+end_src
-
 
 ** Treemacs (Left Side Directory Tree)
 
@@ -154,9 +152,9 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     (treemacs-follow-mode 1)
     (treemacs-git-commit-diff-mode 1))
 
-  (treemacs 1)
+  ;; Treemacs loads after ivy and counsel so the workspace
+  ;; picker has counsel support
 #+end_src
-
 
 ** LSP Mode
 
@@ -188,9 +186,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :commands (lsp-treemacs-errors-list))
 #+end_src
 
-
 * New Global Minor Modes
-
 ** Counsel/Ivy (Searching)
 
 #+begin_src emacs-lisp
@@ -201,12 +197,14 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :custom
     (ivy-dynamic-exhibit-delay-ms 250)
     :bind (("C-f" . counsel-grep)
-           ("C-s" . counsel-git-grep)))
+           ("C-s" . counsel-git-grep)
+           :map ivy-minibuffer-map
+           ("S-SPC" . nil)))
 
   (ivy-mode 1)
   (counsel-mode 1)
+  (treemacs 1)
 #+end_src
-
 
 ** Which Key Mode
 
@@ -220,7 +218,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 
   (which-key-mode 1)
 #+end_src
-
 
 ** Company Mode (Code Completion)
 
@@ -240,7 +237,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (global-company-mode 1)
 #+end_src
 
-
 ** Rainbow Delimiters
 
 #+begin_src emacs-lisp
@@ -248,7 +244,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :ensure t
     :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
-
 
 ** Marginalia
 
@@ -260,7 +255,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (marginalia-mode)
 #+end_src
 
-
 * New Major Modes
 
 ** Tree Sitter (Many Modes)
@@ -270,7 +264,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :ensure t
     :mode (("\\.ts\\'" . typescript-ts-mode)
            ("\\.tsx\\'" . tsx-ts-mode)
-           ("\\.rb\\'" . ruby-ts-mode)
+           ("\\.rb\\'" . ruby-ts-mode))
     :commands (global-tree-sitter-mode
                tree-sitter-hl-mode)
     :hook (tree-sitter-after-on . tree-sitter-hl-mode))
@@ -283,7 +277,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (global-treesit-auto-mode)
 #+end_src
 
-
 ** Ledger Mode
 
 #+begin_src emacs-lisp
@@ -294,7 +287,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
            (ledger-mode . display-line-numbers-mode)))
 #+end_src
 
-
 ** Nix Mode
 
 #+BEGIN_SRC emacs-lisp
@@ -302,7 +294,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :ensure t
     :mode ("\\.nix\\'"))
 #+END_SRC
-
 
 ** Dockerfile Mode
 
@@ -312,7 +303,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :mode ("Dockerfile"))
 #+end_src
 
-
 ** Docker Compose Mode
 
 #+begin_src emacs-lisp
@@ -320,7 +310,6 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :ensure t
     :mode ("docker-compose\\.yml"))
 #+end_src
-
 
 ** Terraform
 
@@ -330,10 +319,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :mode ("\\.tf//'"))
 #+end_src
 
-
-
 * Built-in Major Mode Extras and Configuration
-
 ** Org Mode
 
 *** Enabling Table of Contents
@@ -363,16 +349,22 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :ensure t
     :custom
     (org-roam-directory "~/notes")
+    (org-roam-dailies-directory "daily/")
+    (org-roam-dailies-capture-template
+     '(("d" "default" entry
+        (file "~/.config/emacs/org-roam/templates/daily.org")
+        :target (file+head "%<%Y-%m-%d>.org"
+                           "#+TITLE: %<%Y-%m-%d>\n"))))
     :commands (org-roam-setup)
     :bind (("C-c n l" . org-roam-buffer-toggle)
            ("C-c n f" . org-roam-node-find)
-           ("C-c n i" . org-roam-node-insert))
-    :config
-    (org-roam-setup))
+           ("C-c n i" . org-roam-node-insert)
+           ("C-c n t" . org-roam-dailies-capture-today)))
+
+  (org-roam-setup)
 #+end_src
 
-
-** Ruby (TS) Mode
+** Ruby (Tree Sitter) Mode
 
 *** Robe Mode
 
@@ -381,16 +373,4 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :ensure t
     :hook ((ruby-mode . robe-mode)
            (ruby-ts-mode . robe-mode)))
-#+end_src
-
-
-* Package Definitions (old and to be moved)
-
-** Main Config
-
-*** Keybinds
-
-#+begin_src emacs-lisp
-  (global-set-key (kbd "C-z") 'ignore)
-  (global-set-key (kbd "C-x C-z") 'ignore)
 #+end_src

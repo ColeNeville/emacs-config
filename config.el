@@ -42,6 +42,9 @@
 (add-hook 'prog-mode-hook 'flymake-mode)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
+(global-set-key (kbd "C-z") nil)
+(global-set-key (kbd "C-x C-z") nil)
+
 (use-package ace-window
   :ensure t
   :bind (("C-x S" . ace-window)))
@@ -58,6 +61,20 @@
 ;;              eglot-ensure)
 ;;   :hook ((tsx-ts-mode . eglot-ensure)
 ;;          (typescript-ts-mode . eglot-ensure)))
+
+(use-package treemacs
+  :ensure t
+  :commands (treemacs
+             treemacs-follow-mode
+             treemacs-git-commit-diff-mode)
+  :custom
+  (treemacs-width 45)
+  :config
+  (treemacs-follow-mode 1)
+  (treemacs-git-commit-diff-mode 1))
+
+;; Treemacs loads after ivy and counsel so the workspace
+;; picker has counsel support
 
 (use-package lsp-mode
   :ensure t
@@ -92,10 +109,13 @@
   :custom
   (ivy-dynamic-exhibit-delay-ms 250)
   :bind (("C-f" . counsel-grep)
-         ("C-s" . counsel-git-grep)))
+         ("C-s" . counsel-git-grep)
+         :map ivy-minibuffer-map
+         ("S-SPC" . nil)))
 
 (ivy-mode 1)
 (counsel-mode 1)
+(treemacs 1)
 
 (use-package which-key
   :ensure t
@@ -106,10 +126,35 @@
 
 (which-key-mode 1)
 
+(use-package company
+  :ensure t
+  :commands (global-company-mode)
+  :custom
+  (company-tooltip-align-annotations t)
+  (company-tooltip-display 'lines)
+  (company-tooltip-flip-when-above t)
+  (company-tooltip-margin 3)
+  (company-tooltip-maximum-width 60)
+  (company-frontends '(company-pseudo-tooltip-frontend
+                       company-preview-if-just-one-frontend)))
+
+(global-company-mode 1)
+
+(use-package rainbow-delimiters
+  :ensure t
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package marginalia
+  :ensure t
+  :commands (marginalia-mode))
+
+(marginalia-mode)
+
 (use-package tree-sitter
   :ensure t
   :mode (("\\.ts\\'" . typescript-ts-mode)
-         ("\\.tsx\\'" . tsx-ts-mode))
+         ("\\.tsx\\'" . tsx-ts-mode)
+         ("\\.rb\\'" . ruby-ts-mode))
   :commands (global-tree-sitter-mode
              tree-sitter-hl-mode)
   :hook (tree-sitter-after-on . tree-sitter-hl-mode))
@@ -139,6 +184,10 @@
   :ensure t
   :mode ("docker-compose\\.yml"))
 
+(use-package terraform-mode
+  :ensure t
+  :mode ("\\.tf//'"))
+
 (use-package toc-org
   :ensure t
   :commands (toc-org-enable)
@@ -155,72 +204,21 @@
   :ensure t
   :custom
   (org-roam-directory "~/notes")
+  (org-roam-dailies-directory "daily/")
+  (org-roam-dailies-capture-template
+   '(("d" "default" entry
+      (file "~/.config/emacs/org-roam/templates/daily.org")
+      :target (file+head "%<%Y-%m-%d>.org"
+                         "#+TITLE: %<%Y-%m-%d>\n"))))
   :commands (org-roam-setup)
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
-         ("C-c n i" . org-roam-node-insert))
-  :config
-  (org-roam-setup))
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n t" . org-roam-dailies-capture-today)))
 
-
-
-
+(org-roam-setup)
 
 (use-package robe
   :ensure t
-  :hook (ruby-mode . robe-mode))
-
-(use-package rainbow-delimiters
-  :ensure t
-  :hook (prog-mode . rainbow-delimiters-mode))
-
-(use-package company
-  :ensure t
-  :custom
-  (company-tooltip-align-annotations t)
-  (company-tooltip-display 'lines)
-  (company-tooltip-flip-when-above t)
-  (company-tooltip-margin 3)
-  (company-tooltip-maximum-width 60)
-  (company-frontends '(company-pseudo-tooltip-frontend
-		       company-preview-if-just-one-frontend))
-  :config
-  (global-company-mode))
-
-(use-package treemacs
-  :ensure t
-  :commands (treemacs)
-  :custom
-  (treemacs-width 45)
-  :config
-  (treemacs-follow-mode 1)
-  (treemacs-git-commit-diff-mode 1))
-
-
-
-(use-package marginalia
-  :ensure t
-  :config
-  (marginalia-mode))
-
-
-
-(use-package apheleia
-  :ensure t
-  :commands (apheleia-global-mode))
-
-(use-package terraform-mode :ensure t)
-
-(use-package editorconfig :ensure t)
-
-;; This is required for eglot to load in cases where the folder is not a git repo
-(add-to-list 'project-vc-extra-root-markers "tsconfig.json")
-
-(ivy-mode 1)
-(counsel-mode 1)
-
-;; Load treemacs last so ivy and counsel are setup
-(treemacs 1)
-
-(global-set-key (kbd "C-z") 'ignore)
-(global-set-key (kbd "C-x C-z") 'ignore)
+  :hook ((ruby-mode . robe-mode)
+         (ruby-ts-mode . robe-mode)))
