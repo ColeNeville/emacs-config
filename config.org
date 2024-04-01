@@ -4,45 +4,6 @@
 
 This gets packaged into ./config.el by org-babel-eval-in-repl imported by the init.el.
 
-* Table of Contents :toc_3:
-- [[#initial-setup-and-configuration][Initial Setup and Configuration]]
-  - [[#auto-update-installed-packages][Auto Update Installed Packages]]
-  - [[#load-and-configure-modus-theme][Load and configure Modus Theme]]
-  - [[#default-emacs-confiuration][Default Emacs Confiuration]]
-  - [[#default-modes-setup][Default Modes Setup]]
-  - [[#keybindings][Keybindings]]
-    - [[#remove-default-keybinds][Remove Default Keybinds]]
-    - [[#minibuffer-escape][Minibuffer Escape]]
-    - [[#create-a-user-defined-global-prefix][Create a User-defined Global Prefix]]
-- [[#utilities][Utilities]]
-  - [[#ace-window-window-management][Ace Window (Window Management)]]
-  - [[#diminish-hide-from-modeline][Diminish (Hide from Modeline)]]
-  - [[#magit-better-gitvc-integration][Magit (Better Git/VC Integration)]]
-  - [[#treemacs-left-side-directory-tree][Treemacs (Left Side Directory Tree)]]
-  - [[#lsp-mode][LSP Mode]]
-- [[#new-global-minor-modes][New Global Minor Modes]]
-  - [[#counselivy-searching][Counsel/Ivy (Searching)]]
-  - [[#which-key-mode][Which Key Mode]]
-  - [[#company-mode-code-completion][Company Mode (Code Completion)]]
-  - [[#rainbow-delimiters][Rainbow Delimiters]]
-  - [[#marginalia][Marginalia]]
-- [[#new-major-modes][New Major Modes]]
-  - [[#tree-sitter-many-modes][Tree Sitter (Many Modes)]]
-  - [[#ledger-mode][Ledger Mode]]
-  - [[#nix-mode][Nix Mode]]
-  - [[#dockerfile-mode][Dockerfile Mode]]
-  - [[#docker-compose-mode][Docker Compose Mode]]
-  - [[#terraform][Terraform]]
-- [[#built-in-major-mode-extras-and-configuration][Built-in Major Mode Extras and Configuration]]
-  - [[#org-mode][Org Mode]]
-    - [[#enable-org-tempo][Enable Org Tempo]]
-    - [[#enable-org-indent-mode][Enable Org Indent Mode]]
-    - [[#enable-table-of-contents][Enable Table of Contents]]
-    - [[#enable-org-bullets][Enable Org Bullets]]
-    - [[#enable-and-setup-org-roam][Enable and Setup Org Roam]]
-  - [[#ruby-tree-sitter-mode][Ruby (Tree Sitter) Mode]]
-    - [[#robe-mode][Robe Mode]]
-
 * Initial Setup and Configuration
 
 ** Auto Update Installed Packages
@@ -83,8 +44,9 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
         inhibit-startup-message t)
 
   (setq display-line-numbers-minor-tick 5
-        display-line-numbers-major-tick 25
-        display-line-numbers-width 4)
+        display-line-numbers-major-tick 25)
+
+  (setq-default display-line-numbers-width 4)
 
   (setq org-support-shift-select t)
 
@@ -123,6 +85,16 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 
 #+begin_src emacs-lisp
   (define-prefix-command 'personal-prefix-map)
+  (define-prefix-command 'personal-mode-toggle-prefix-map)
+
+  (define-key personal-mode-toggle-prefix-map
+              "c" 'highlight-changes-mode)
+  (define-key personal-mode-toggle-prefix-map
+              "w" 'whitespace-mode)
+
+  (define-key personal-prefix-map
+              "m" 'personal-mode-toggle-prefix-map)
+
   (global-set-key (kbd "C-z") 'personal-prefix-map)
 #+end_src
 
@@ -185,10 +157,10 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :init
     (setq lsp-keymap-prefix "C-z l")
     :commands (lsp
-	           lsp-enable-which-key-integration)
+                   lsp-enable-which-key-integration)
     :hook ((tsx-ts-mode . lsp)
-	       (typescript-ts-mode . lsp)
-	       (lsp-mode . lsp-enable-which-key-integration)))
+               (typescript-ts-mode . lsp)
+               (lsp-mode . lsp-enable-which-key-integration)))
 
   (use-package lsp-ui
     :ensure t
@@ -196,14 +168,12 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 
   (use-package lsp-ivy
     :ensure t
-    :after (lsp-mode
-	    ivy)
+    :after (lsp-mode ivy)
     :commands (lsp-ivy-workspace-symbol))
 
   (use-package lsp-treemacs
     :ensure t
-    :after (lsp-mode
-	    treemacs)
+    :after (lsp-mode treemacs)
     :commands (lsp-treemacs-errors-list))
 #+end_src
 
@@ -214,19 +184,21 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 #+begin_src emacs-lisp
   (use-package ivy
     :ensure t
-    :diminish t
     :commands (ivy-mode)
     :custom
     (ivy-use-virtual-buffers t)
     (ivy-count-format "(%d/%d) ")
     :bind (:map ivy-minibuffer-map
-		("S-SPC" . nil)))
+                ("S-SPC" . nil))
+    :config
+    (diminish 'ivy-mode))
 
   (use-package counsel
     :ensure t
-    :diminish t
     :after ivy
-    :commands (counsel-mode))
+    :commands (counsel-mode)
+    :config
+    (diminish 'counsel-mode))
 
   (ivy-mode 1)
   (counsel-mode 1)
@@ -238,11 +210,11 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 #+begin_src emacs-lisp
   (use-package which-key
     :ensure t
-    :diminish t
     :commands (which-key-mode)
     :bind (("M-h" . which-key-show-top-level))
     :custom
-    (which-key-idle-delay 0.5))
+    (which-key-idle-delay 0.5)
+    (diminish 'which-key-mode))
 
   (which-key-mode 1)
 #+end_src
@@ -260,7 +232,9 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     (company-tooltip-margin 3)
     (company-tooltip-maximum-width 60)
     (company-frontends '(company-pseudo-tooltip-frontend
-                         company-preview-if-just-one-frontend)))
+                         company-preview-if-just-one-frontend))
+    :config
+    (diminish 'company-mode))
 
   (global-company-mode 1)
 #+end_src
@@ -281,6 +255,29 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :commands (marginalia-mode))
 
   (marginalia-mode)
+#+end_src
+
+** Undo Tree
+
+#+begin_src emacs-lisp
+  (use-package undo-tree
+    :ensure t
+    :commands (global-undo-tree-mode)
+    :config
+    (diminish 'undo-tree-mode))
+
+  (global-undo-tree-mode)
+#+end_src
+
+** Copilot
+
+#+begin_src emacs-lisp
+  ;; (use-package copilot
+  ;;   :vc (:fetcher github
+  ;;                 :repo "copilot-emacs/copilot.el")
+  ;;   :ensure t
+  ;;   :commands (copilot-mode copilot-login)
+  ;;   :hook (prog-mode . copilot-mode))
 #+end_src
 
 * New Major Modes
@@ -392,29 +389,40 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     (org-roam-dailies-directory "daily/")
     (org-roam-dailies-capture-template
      '(("d" "default" entry
-	(file "~/.config/emacs/org-roam/templates/daily.org")
-	:target (file+head "%<%Y-%m-%d>.org"
-			   "#+TITLE: %<%Y-%m-%d>\n"))))
-    :commands (org-roam-setup))
-
-  (defun cn/org-roam-dailies-goto-today
-      (org-roam-dailies-capture-today :goto t))
+        (file "~/.config/emacs/org-roam/templates/daily.org")
+        :target (file+head "%<%Y-%m-%d>.org"
+                           "#+TITLE: %<%Y-%m-%d>\n"))))
+    :commands (org-roam-setup)
+    :config
+    (define-prefix-command 'personal-org-roam-prefix)
+    (define-key personal-org-roam-prefix
+                "b" 'org-roam-buffer-toggle)
+    (define-key personal-org-roam-prefix
+                "i" 'org-roam-node-insert)
+    (define-key personal-org-roam-prefix
+                "f" 'org-roam-node-find)
+    ;; (T)oday
+    (define-key personal-org-roam-prefix
+                "t" 'org-roam-dailies-capture-today)
+    (define-key personal-org-roam-prefix
+                "T" 'org-roam-dailies-goto-today)
+    ;; (Y)esterday
+    (define-key personal-org-roam-prefix
+                "Y" 'org-roam-dailies-goto-yesterday)
+    ;; To(m)orrow
+    (define-key personal-org-roam-prefix
+                "m" 'org-roam-dailies-capture-tomorrow)
+    (define-key personal-org-roam-prefix
+                "M" 'org-roam-dailies-goto-tomorrow)
+    ;; Select (d)ate
+    (define-key personal-org-roam-prefix
+                "d" 'org-roam-dailies-capture-date)
+    (define-key personal-org-roam-prefix
+                "D" 'org-roam-dailies-goto-date)
+    (define-key personal-prefix-map
+                "n" 'personal-org-roam-prefix))
 
   (org-roam-setup)
-
-  (define-prefix-command 'personal-org-roam-prefix)
-
-  (define-key personal-org-roam-prefix
-	      "b" 'org-roam-buffer-toggle)
-  (define-key personal-org-roam-prefix
-	      "i" 'org-roam-node-insert)
-  (define-key personal-org-roam-prefix
-	      "f" 'org-roam-node-find)
-  (define-key personal-org-roam-prefix
-	      "d" 'cn/org-roam-dailies-goto-today)
-
-  (define-key personal-prefix-map
-	      "n" 'personal-org-roam-prefix)
 #+end_src
 
 ** Ruby (Tree Sitter) Mode

@@ -25,8 +25,9 @@
       inhibit-startup-message t)
 
 (setq display-line-numbers-minor-tick 5
-      display-line-numbers-major-tick 25
-      display-line-numbers-width 4)
+      display-line-numbers-major-tick 25)
+
+(setq-default display-line-numbers-width 4)
 
 (setq org-support-shift-select t)
 
@@ -47,6 +48,16 @@
 (global-set-key [escape] 'keyboard-escape-quit)
 
 (define-prefix-command 'personal-prefix-map)
+(define-prefix-command 'personal-mode-toggle-prefix-map)
+
+(define-key personal-mode-toggle-prefix-map
+            "c" 'highlight-changes-mode)
+(define-key personal-mode-toggle-prefix-map
+            "w" 'whitespace-mode)
+
+(define-key personal-prefix-map
+            "m" 'personal-mode-toggle-prefix-map)
+
 (global-set-key (kbd "C-z") 'personal-prefix-map)
 
 (use-package ace-window
@@ -86,10 +97,10 @@
   :init
   (setq lsp-keymap-prefix "C-z l")
   :commands (lsp
-	         lsp-enable-which-key-integration)
+                 lsp-enable-which-key-integration)
   :hook ((tsx-ts-mode . lsp)
-	     (typescript-ts-mode . lsp)
-	     (lsp-mode . lsp-enable-which-key-integration)))
+             (typescript-ts-mode . lsp)
+             (lsp-mode . lsp-enable-which-key-integration)))
 
 (use-package lsp-ui
   :ensure t
@@ -97,31 +108,31 @@
 
 (use-package lsp-ivy
   :ensure t
-  :after (lsp-mode
-	  ivy)
+  :after (lsp-mode ivy)
   :commands (lsp-ivy-workspace-symbol))
 
 (use-package lsp-treemacs
   :ensure t
-  :after (lsp-mode
-	  treemacs)
+  :after (lsp-mode treemacs)
   :commands (lsp-treemacs-errors-list))
 
 (use-package ivy
   :ensure t
-  :diminish t
   :commands (ivy-mode)
   :custom
   (ivy-use-virtual-buffers t)
   (ivy-count-format "(%d/%d) ")
   :bind (:map ivy-minibuffer-map
-	      ("S-SPC" . nil)))
+              ("S-SPC" . nil))
+  :config
+  (diminish 'ivy-mode))
 
 (use-package counsel
   :ensure t
-  :diminish t
   :after ivy
-  :commands (counsel-mode))
+  :commands (counsel-mode)
+  :config
+  (diminish 'counsel-mode))
 
 (ivy-mode 1)
 (counsel-mode 1)
@@ -129,11 +140,11 @@
 
 (use-package which-key
   :ensure t
-  :diminish t
   :commands (which-key-mode)
   :bind (("M-h" . which-key-show-top-level))
   :custom
-  (which-key-idle-delay 0.5))
+  (which-key-idle-delay 0.5)
+  (diminish 'which-key-mode))
 
 (which-key-mode 1)
 
@@ -147,7 +158,9 @@
   (company-tooltip-margin 3)
   (company-tooltip-maximum-width 60)
   (company-frontends '(company-pseudo-tooltip-frontend
-                       company-preview-if-just-one-frontend)))
+                       company-preview-if-just-one-frontend))
+  :config
+  (diminish 'company-mode))
 
 (global-company-mode 1)
 
@@ -160,6 +173,21 @@
   :commands (marginalia-mode))
 
 (marginalia-mode)
+
+(use-package undo-tree
+  :ensure t
+  :commands (global-undo-tree-mode)
+  :config
+  (diminish 'undo-tree-mode))
+
+(global-undo-tree-mode)
+
+;; (use-package copilot
+;;   :vc (:fetcher github
+;;                 :repo "copilot-emacs/copilot.el")
+;;   :ensure t
+;;   :commands (copilot-mode copilot-login)
+;;   :hook (prog-mode . copilot-mode))
 
 (use-package tree-sitter
   :ensure t
@@ -223,27 +251,38 @@
    '(("d" "default" entry
       (file "~/.config/emacs/org-roam/templates/daily.org")
       :target (file+head "%<%Y-%m-%d>.org"
-			 "#+TITLE: %<%Y-%m-%d>\n"))))
-  :commands (org-roam-setup))
-
-(defun cn/org-roam-dailies-goto-today
-    (org-roam-dailies-capture-today :goto t))
+                         "#+TITLE: %<%Y-%m-%d>\n"))))
+  :commands (org-roam-setup)
+  :config
+  (define-prefix-command 'personal-org-roam-prefix)
+  (define-key personal-org-roam-prefix
+              "b" 'org-roam-buffer-toggle)
+  (define-key personal-org-roam-prefix
+              "i" 'org-roam-node-insert)
+  (define-key personal-org-roam-prefix
+              "f" 'org-roam-node-find)
+  ;; (T)oday
+  (define-key personal-org-roam-prefix
+              "t" 'org-roam-dailies-capture-today)
+  (define-key personal-org-roam-prefix
+              "T" 'org-roam-dailies-goto-today)
+  ;; (Y)esterday
+  (define-key personal-org-roam-prefix
+              "Y" 'org-roam-dailies-goto-yesterday)
+  ;; To(m)orrow
+  (define-key personal-org-roam-prefix
+              "m" 'org-roam-dailies-capture-tomorrow)
+  (define-key personal-org-roam-prefix
+              "M" 'org-roam-dailies-goto-tomorrow)
+  ;; Select (d)ate
+  (define-key personal-org-roam-prefix
+              "d" 'org-roam-dailies-capture-date)
+  (define-key personal-org-roam-prefix
+              "D" 'org-roam-dailies-goto-date)
+  (define-key personal-prefix-map
+              "n" 'personal-org-roam-prefix))
 
 (org-roam-setup)
-
-(define-prefix-command 'personal-org-roam-prefix)
-
-(define-key personal-org-roam-prefix
-	    "b" 'org-roam-buffer-toggle)
-(define-key personal-org-roam-prefix
-	    "i" 'org-roam-node-insert)
-(define-key personal-org-roam-prefix
-	    "f" 'org-roam-node-find)
-(define-key personal-org-roam-prefix
-	    "d" 'cn/org-roam-dailies-goto-today)
-
-(define-key personal-prefix-map
-	    "n" 'personal-org-roam-prefix)
 
 (use-package robe
   :ensure t
