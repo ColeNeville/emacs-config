@@ -67,13 +67,16 @@
   :ensure t
   :after (counsel)
   :commands (treemacs
-             treemacs-follow-mode
-             treemacs-git-commit-diff-mode)
+	     treemacs-follow-mode
+	     treemacs-git-commit-diff-mode)
   :custom
   (treemacs-width 45)
   :config
   (treemacs-follow-mode 1)
   (treemacs-git-commit-diff-mode 1))
+
+(define-key personal-prefix-map
+	    "t" 'treemacs-select-window)
 
 ;; Treemacs loads after ivy and counsel so the workspace
 ;; picker has counsel support
@@ -122,7 +125,7 @@
 
 (ivy-mode 1)
 (counsel-mode 1)
-(treemacs 1)
+(treemacs 1) ;; Treemacs needs to be initialized after ivy and counsel
 
 (use-package which-key
   :ensure t
@@ -199,7 +202,7 @@
 (require 'org-tempo)
 
 (add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
-(eval-after-load 'org-indent '(diminsh 'org-indent-mode))
+(eval-after-load 'org-indent '(diminish 'org-indent-mode))
 
 (use-package toc-org
   :ensure t
@@ -227,14 +230,20 @@
     (org-roam-dailies-capture-today :goto t))
 
 (org-roam-setup)
+
+(define-prefix-command 'personal-org-roam-prefix)
+
+(define-key personal-org-roam-prefix
+	    "b" 'org-roam-buffer-toggle)
+(define-key personal-org-roam-prefix
+	    "i" 'org-roam-node-insert)
+(define-key personal-org-roam-prefix
+	    "f" 'org-roam-node-find)
+(define-key personal-org-roam-prefix
+	    "d" 'cn/org-roam-dailies-goto-today)
+
 (define-key personal-prefix-map
-	    "nb" 'org-roam-buffer-toggle)
-(define-key personal-prefix-map
-	    "ni" 'org-roam-node-insert)
-(define-key personal-prefix-map
-	    "nf" 'org-roam-node-find)
-(define-key personal-prefix-map
-	    "nd" 'cn/org-roam-dailies-goto-today)
+	    "n" 'personal-org-roam-prefix)
 
 (use-package robe
   :ensure t
