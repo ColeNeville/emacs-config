@@ -174,13 +174,13 @@
 
 (marginalia-mode)
 
-(use-package undo-tree
-  :ensure t
-  :commands (global-undo-tree-mode)
-  :config
-  (diminish 'undo-tree-mode))
+;; (use-package undo-tree
+;;   :ensure t
+;;   :commands (global-undo-tree-mode)
+;;   :config
+;;   (diminish 'undo-tree-mode))
 
-(global-undo-tree-mode)
+;; (global-undo-tree-mode)
 
 ;; (use-package copilot
 ;;   :vc (:fetcher github
@@ -232,6 +232,8 @@
 (add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
 (eval-after-load 'org-indent '(diminish 'org-indent-mode))
 
+(add-to-list 'org-link-frame-setup '(file . find-file))
+
 (use-package toc-org
   :ensure t
   :commands (toc-org-enable)
@@ -241,6 +243,10 @@
   :ensure t
   :commands (org-bullets-mode)
   :hook ((org-mode . (lambda () (org-bullets-mode 1)))))
+
+(define-prefix-command 'personal-org-roam-prefix-map)
+(define-key personal-prefix-map
+            "n" 'personal-org-roam-prefix-map)
 
 (use-package org-roam
   :ensure t
@@ -253,34 +259,27 @@
       :target (file+head "%<%Y-%m-%d>.org"
                          "#+TITLE: %<%Y-%m-%d>\n"))))
   :commands (org-roam-setup)
-  :config
-  (define-prefix-command 'personal-org-roam-prefix)
-  (define-key personal-org-roam-prefix
-              "b" 'org-roam-buffer-toggle)
-  (define-key personal-org-roam-prefix
-              "i" 'org-roam-node-insert)
-  (define-key personal-org-roam-prefix
-              "f" 'org-roam-node-find)
-  ;; (T)oday
-  (define-key personal-org-roam-prefix
-              "t" 'org-roam-dailies-capture-today)
-  (define-key personal-org-roam-prefix
-              "T" 'org-roam-dailies-goto-today)
-  ;; (Y)esterday
-  (define-key personal-org-roam-prefix
-              "Y" 'org-roam-dailies-goto-yesterday)
-  ;; To(m)orrow
-  (define-key personal-org-roam-prefix
-              "m" 'org-roam-dailies-capture-tomorrow)
-  (define-key personal-org-roam-prefix
-              "M" 'org-roam-dailies-goto-tomorrow)
-  ;; Select (d)ate
-  (define-key personal-org-roam-prefix
-              "d" 'org-roam-dailies-capture-date)
-  (define-key personal-org-roam-prefix
-              "D" 'org-roam-dailies-goto-date)
-  (define-key personal-prefix-map
-              "n" 'personal-org-roam-prefix))
+  :bind (:map personal-org-roam-prefix-map
+               ("b" . org-roam-buffer-toggle)
+               ;; (T)oday
+               ("t" . org-roam-dailies-capture-today)
+               ("T" . org-roam-dailies-goto-today)
+               ;; (Y)esterday
+               ("y" . org-roam-dailies-capture-yesterday)
+               ("Y" . org-roam-dailies-goto-yesterday)
+               ;; To(m)orrow
+               ("m" . org-roam-dailies-capture-tomorrow)
+               ("M" . org-roam-dailes-goto-tomorrow)
+               ;; Select (d)ate
+               ("d" . org-roam-dailies-capture-date)
+               ("D" . org-roam-dailies-goto-date)))
+
+(use-package vulpea
+  :ensure t
+  :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable))
+  :bind (:map personal-org-roam-prefix-map
+              ("f" . vulpea-find)
+              ("i" . vulpea-insert)))
 
 (org-roam-setup)
 

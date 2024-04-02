@@ -260,13 +260,13 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 ** Undo Tree
 
 #+begin_src emacs-lisp
-  (use-package undo-tree
-    :ensure t
-    :commands (global-undo-tree-mode)
-    :config
-    (diminish 'undo-tree-mode))
+  ;; (use-package undo-tree
+  ;;   :ensure t
+  ;;   :commands (global-undo-tree-mode)
+  ;;   :config
+  ;;   (diminish 'undo-tree-mode))
 
-  (global-undo-tree-mode)
+  ;; (global-undo-tree-mode)
 #+end_src
 
 ** Copilot
@@ -361,6 +361,12 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (eval-after-load 'org-indent '(diminish 'org-indent-mode))
 #+end_src
 
+*** Random Settings
+
+#+begin_src emacs-lisp
+  (add-to-list 'org-link-frame-setup '(file . find-file))
+#+end_src
+
 *** Enable Table of Contents
 
 #+begin_src emacs-lisp
@@ -382,6 +388,10 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 *** Enable and Setup Org Roam
 
 #+begin_src emacs-lisp
+  (define-prefix-command 'personal-org-roam-prefix-map)
+  (define-key personal-prefix-map
+              "n" 'personal-org-roam-prefix-map)
+
   (use-package org-roam
     :ensure t
     :custom
@@ -393,34 +403,27 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
         :target (file+head "%<%Y-%m-%d>.org"
                            "#+TITLE: %<%Y-%m-%d>\n"))))
     :commands (org-roam-setup)
-    :config
-    (define-prefix-command 'personal-org-roam-prefix)
-    (define-key personal-org-roam-prefix
-                "b" 'org-roam-buffer-toggle)
-    (define-key personal-org-roam-prefix
-                "i" 'org-roam-node-insert)
-    (define-key personal-org-roam-prefix
-                "f" 'org-roam-node-find)
-    ;; (T)oday
-    (define-key personal-org-roam-prefix
-                "t" 'org-roam-dailies-capture-today)
-    (define-key personal-org-roam-prefix
-                "T" 'org-roam-dailies-goto-today)
-    ;; (Y)esterday
-    (define-key personal-org-roam-prefix
-                "Y" 'org-roam-dailies-goto-yesterday)
-    ;; To(m)orrow
-    (define-key personal-org-roam-prefix
-                "m" 'org-roam-dailies-capture-tomorrow)
-    (define-key personal-org-roam-prefix
-                "M" 'org-roam-dailies-goto-tomorrow)
-    ;; Select (d)ate
-    (define-key personal-org-roam-prefix
-                "d" 'org-roam-dailies-capture-date)
-    (define-key personal-org-roam-prefix
-                "D" 'org-roam-dailies-goto-date)
-    (define-key personal-prefix-map
-                "n" 'personal-org-roam-prefix))
+    :bind (:map personal-org-roam-prefix-map
+                 ("b" . org-roam-buffer-toggle)
+                 ;; (T)oday
+                 ("t" . org-roam-dailies-capture-today)
+                 ("T" . org-roam-dailies-goto-today)
+                 ;; (Y)esterday
+                 ("y" . org-roam-dailies-capture-yesterday)
+                 ("Y" . org-roam-dailies-goto-yesterday)
+                 ;; To(m)orrow
+                 ("m" . org-roam-dailies-capture-tomorrow)
+                 ("M" . org-roam-dailes-goto-tomorrow)
+                 ;; Select (d)ate
+                 ("d" . org-roam-dailies-capture-date)
+                 ("D" . org-roam-dailies-goto-date)))
+
+  (use-package vulpea
+    :ensure t
+    :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable))
+    :bind (:map personal-org-roam-prefix-map
+                ("f" . vulpea-find)
+                ("i" . vulpea-insert)))
 
   (org-roam-setup)
 #+end_src
