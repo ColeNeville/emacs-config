@@ -392,38 +392,75 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (define-key personal-prefix-map
               "n" 'personal-org-roam-prefix-map)
 
+  ;; ;; These aren't working as expected...
+  ;; (defun cn/org-roam-dailies-journal-today ()
+  ;;   "Create a journal entry in the today daily note"
+  ;;   (interactive)
+  ;;   (org-roam-dailies-capture-today :key "j"))
+
+  ;; (defun cn/org-roam-dailies-todo-today ()
+  ;;   "Create a todo entry in the today daily note"
+  ;;   (interactive)
+  ;;   (org-roam-dailies-capture-today :key "t"))
+  ;; ;;
+
   (use-package org-roam
     :ensure t
+    :after (org)
     :custom
-    (org-roam-directory "~/notes")
+    (org-roam-directory "~/notes/")
+    (org-roam-capture-templates
+     '(("n" "note" plain "* %?"
+        :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                           "#+TITLE: ${title}")
+        :unnarrowed t)))
     (org-roam-dailies-directory "daily/")
-    (org-roam-dailies-capture-template
-     '(("d" "default" entry
-        (file "~/.config/emacs/org-roam/templates/daily.org")
-        :target (file+head "%<%Y-%m-%d>.org"
-                           "#+TITLE: %<%Y-%m-%d>\n"))))
+    (org-roam-dailies-capture-templates
+     '(("j" "journal" item "%<%H:%M> - %?"
+        :target (file+olp "%<%Y-%m-%d>.org" ("Journal"))
+        :unarrowed t)
+       ("t" "todo" item "[ ] %?"
+        :target (file+olp "%<%Y-%m-%d>.org" ("Todo [/]"))
+        :unarrowed t)
+       ("n" "note" entry "\n* %?"
+        :target (file+head "%<%Y-%m-%d>.org" "#+TITLE: %<%Y-%m-%d>")
+        :unarrowed t)
+       ("m" "meeting" entry "\n* %{meeting_name}\n** Attending\n- %?\n** Notes\n*** \n** Takeaways [/]\n- [ ] "
+        :target (file+head "%<%Y-%m-%d>.org" "#+TITLE: %<%Y-%m-%d>")
+        :unarrowed t)))
     :commands (org-roam-setup)
     :bind (:map personal-org-roam-prefix-map
-                 ("b" . org-roam-buffer-toggle)
-                 ;; (T)oday
-                 ("t" . org-roam-dailies-capture-today)
-                 ("T" . org-roam-dailies-goto-today)
-                 ;; (Y)esterday
-                 ("y" . org-roam-dailies-capture-yesterday)
-                 ("Y" . org-roam-dailies-goto-yesterday)
-                 ;; To(m)orrow
-                 ("m" . org-roam-dailies-capture-tomorrow)
-                 ("M" . org-roam-dailes-goto-tomorrow)
-                 ;; Select (d)ate
-                 ("d" . org-roam-dailies-capture-date)
-                 ("D" . org-roam-dailies-goto-date)))
+                ("b" . org-roam-buffer-toggle)
+                ;; Create a journal capture
+                ;; ("j" . cn/org-roam-dailies-journal-today)
+                ;; ("t" . cn/org-roam-dailies-todo-today)
+                ;; (T)oday
+                ("T" . org-roam-dailies-goto-today)
+                ("t" . org-roam-dailies-capture-today)
+                ;; Select (d)ate
+                ("D" . org-roam-dailies-goto-date)
+                ("d" . org-roam-dailies-capture-date)))
 
   (use-package vulpea
     :ensure t
+    :after (org-roam)
     :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable))
     :bind (:map personal-org-roam-prefix-map
                 ("f" . vulpea-find)
                 ("i" . vulpea-insert)))
+
+  (use-package deft
+    :ensure t
+    :after (org-roam)
+    :bind (:map personal-org-roam-prefix-map
+                ("s" . deft))
+    :custom
+    (deft-recursive t)
+    (deft-use-filter-string-for-filename t)
+    (deft-default-extension "org")
+    (deft-directory org-roam-directory))
+
+  (use-package org-noter :ensure t)
 
   (org-roam-setup)
 #+end_src

@@ -254,10 +254,8 @@
   (org-roam-directory "~/notes")
   (org-roam-dailies-directory "daily/")
   (org-roam-dailies-capture-template
-   '(("d" "default" entry
-      (file "~/.config/emacs/org-roam/templates/daily.org")
-      :target (file+head "%<%Y-%m-%d>.org"
-                         "#+TITLE: %<%Y-%m-%d>\n"))))
+   '(("d" "default" entry "* %?\n\n**\n\n"
+      :target (file+head "%<%Y-%m-%d>.org" "#+TITLE: %<%Y-%m-%d>\n"))))
   :commands (org-roam-setup)
   :bind (:map personal-org-roam-prefix-map
                ("b" . org-roam-buffer-toggle)
