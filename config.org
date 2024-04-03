@@ -419,13 +419,13 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
      '(("j" "journal" item "%<%H:%M> - %?"
         :target (file+olp "%<%Y-%m-%d>.org" ("Journal"))
         :unarrowed t)
-       ("t" "todo" item "[ ] %?"
-        :target (file+olp "%<%Y-%m-%d>.org" ("Todo [/]"))
+       ("t" "todo" entry "** TODO %?"
+        :target (file+olp "%<%Y-%m-%d>.org" ("Todo"))
         :unarrowed t)
-       ("n" "note" entry "\n* %?"
+       ("n" "note" entry "* %?"
         :target (file+head "%<%Y-%m-%d>.org" "#+TITLE: %<%Y-%m-%d>")
         :unarrowed t)
-       ("m" "meeting" entry "\n* %{meeting_name}\n** Attending\n- %?\n** Notes\n*** \n** Takeaways [/]\n- [ ] "
+       ("m" "meeting" entry "* %{meeting_name}\n** Attending\n- %?\n** Notes\n*** \n** Takeaways [/]\n- [ ] "
         :target (file+head "%<%Y-%m-%d>.org" "#+TITLE: %<%Y-%m-%d>")
         :unarrowed t)))
     :commands (org-roam-setup)
