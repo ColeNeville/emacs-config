@@ -29,7 +29,8 @@
 
 (setq-default display-line-numbers-width 4)
 
-(setq org-support-shift-select t)
+(setq org-support-shift-select t
+      org-startup-truncated nil)
 
 (setq enable-recursive-minibuffers t)
 
