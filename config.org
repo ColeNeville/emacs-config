@@ -198,6 +198,9 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :ensure t
     :after ivy
     :commands (counsel-mode)
+    :bind (:map personal-prefix-map
+                ("f" . counsel-grep)
+                ("F" . counsel-git-grep))
     :config
     (diminish 'counsel-mode))
 
@@ -394,18 +397,24 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
         :unnarrowed t)))
     (org-roam-dailies-directory "daily/")
     (org-roam-dailies-capture-templates
-     '(("j" "journal" item "%<%H:%M> - %?"
-        :target (file+olp "%<%Y-%m-%d>.org" ("Journal"))
-        :unarrowed t)
-       ("t" "todo" entry "** TODO %?"
-        :target (file+olp "%<%Y-%m-%d>.org" ("Todo"))
-        :unarrowed t)
-       ("n" "note" entry "* %?"
-        :target (file+head "%<%Y-%m-%d>.org" "#+TITLE: %<%Y-%m-%d>")
-        :unarrowed t)
-       ("m" "meeting" entry "* %{meeting_name}\n** Attending\n- %?\n** Notes\n*** \n** Takeaways [/]\n- [ ] "
-        :target (file+head "%<%Y-%m-%d>.org" "#+TITLE: %<%Y-%m-%d>")
-        :unarrowed t)))
+     (let ((head "#+TITLE: %<%Y-%m-%d>\n\n* [/] Do today\n\n* Journal")
+           (filename "%<%Y-%m-%d>.org"))
+       `(("j" "journal" item
+          "%<%H:%M> - %?"
+          :target (file+head+olp ,filename ,head ("Journal"))
+          :unarrowed t)
+         ("t" "todo" entry
+          "** TODO %?"
+          :target (file+head+olp ,filename ,head ("Do today"))
+          :unarrowed t)
+         ("n" "note" entry
+          "* %?"
+          :target (file+head ,filename ,head)
+          :unarrowed t)
+         ("m" "meeting" entry
+          "* %{meeting_name}\n** Attending\n- %?\n** Notes\n*** \n** Takeaways [/]\n- [ ] "
+          :target (file+head ,filename ,head)
+          :unarrowed t))))
     :commands (org-roam-setup)
     :bind (:map personal-org-roam-prefix-map
                 ("b" . org-roam-buffer-toggle)

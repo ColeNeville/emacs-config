@@ -31,6 +31,8 @@
 
 (setq org-support-shift-select t)
 
+(setq enable-recursive-minibuffers t)
+
 (setq custom-file "~/.config/custom.el")
 
 (tool-bar-mode -1)
@@ -76,18 +78,17 @@
 
 (use-package treemacs
   :ensure t
-  :after (counsel)
+  :after (ivy counsel)
   :commands (treemacs
-	     treemacs-follow-mode
-	     treemacs-git-commit-diff-mode)
+             treemacs-follow-mode
+             treemacs-git-commit-diff-mode)
   :custom
   (treemacs-width 45)
+  :bind (:map personal-prefix-map
+              ("t" . treemacs-select-window))
   :config
   (treemacs-follow-mode 1)
   (treemacs-git-commit-diff-mode 1))
-
-(define-key personal-prefix-map
-	    "t" 'treemacs-select-window)
 
 ;; Treemacs loads after ivy and counsel so the workspace
 ;; picker has counsel support
@@ -96,11 +97,10 @@
   :ensure t
   :init
   (setq lsp-keymap-prefix "C-z l")
-  :commands (lsp
-                 lsp-enable-which-key-integration)
+  :commands (lsp lsp-enable-which-key-integration)
   :hook ((tsx-ts-mode . lsp)
-             (typescript-ts-mode . lsp)
-             (lsp-mode . lsp-enable-which-key-integration)))
+         (typescript-ts-mode . lsp)
+         (lsp-mode . lsp-enable-which-key-integration)))
 
 (use-package lsp-ui
   :ensure t
@@ -122,6 +122,7 @@
   :custom
   (ivy-use-virtual-buffers t)
   (ivy-count-format "(%d/%d) ")
+  (ivy-use-selectable-prompt t)
   :bind (:map ivy-minibuffer-map
               ("S-SPC" . nil))
   :config
@@ -131,6 +132,9 @@
   :ensure t
   :after ivy
   :commands (counsel-mode)
+  :bind (:map personal-prefix-map
+              ("f" . counsel-grep)
+              ("F" . counsel-git-grep))
   :config
   (diminish 'counsel-mode))
 
@@ -174,21 +178,6 @@
 
 (marginalia-mode)
 
-;; (use-package undo-tree
-;;   :ensure t
-;;   :commands (global-undo-tree-mode)
-;;   :config
-;;   (diminish 'undo-tree-mode))
-
-;; (global-undo-tree-mode)
-
-;; (use-package copilot
-;;   :vc (:fetcher github
-;;                 :repo "copilot-emacs/copilot.el")
-;;   :ensure t
-;;   :commands (copilot-mode copilot-login)
-;;   :hook (prog-mode . copilot-mode))
-
 (use-package tree-sitter
   :ensure t
   :mode (("\\.ts\\'" . typescript-ts-mode)
@@ -225,7 +214,7 @@
 
 (use-package terraform-mode
   :ensure t
-  :mode ("\\.tf//'"))
+  :mode ("\\.tf\\'"))
 
 (require 'org-tempo)
 
@@ -248,36 +237,81 @@
 (define-key personal-prefix-map
             "n" 'personal-org-roam-prefix-map)
 
+;; ;; These aren't working as expected...
+;; (defun cn/org-roam-dailies-journal-today ()
+;;   "Create a journal entry in the today daily note"
+;;   (interactive)
+;;   (org-roam-dailies-capture-today :key "j"))
+
+;; (defun cn/org-roam-dailies-todo-today ()
+;;   "Create a todo entry in the today daily note"
+;;   (interactive)
+;;   (org-roam-dailies-capture-today :key "t"))
+;; ;;
+
 (use-package org-roam
   :ensure t
+  :after (org)
   :custom
-  (org-roam-directory "~/notes")
+  (org-roam-directory "~/notes/")
+  (org-roam-capture-templates
+   '(("n" "note" plain "* %?"
+      :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                         "#+TITLE: ${title}")
+      :unnarrowed t)))
   (org-roam-dailies-directory "daily/")
-  (org-roam-dailies-capture-template
-   '(("d" "default" entry "* %?\n\n**\n\n"
-      :target (file+head "%<%Y-%m-%d>.org" "#+TITLE: %<%Y-%m-%d>\n"))))
+  (org-roam-dailies-capture-templates
+   (let ((head "#+TITLE: %<%Y-%m-%d>\n\n* [/] Do today\n\n* Journal")
+         (filename "%<%Y-%m-%d>.org"))
+     `(("j" "journal" item
+        "%<%H:%M> - %?"
+        :target (file+head+olp ,filename ,head ("Journal"))
+        :unarrowed t)
+       ("t" "todo" entry
+        "** TODO %?"
+        :target (file+head+olp ,filename ,head ("Do today"))
+        :unarrowed t)
+       ("n" "note" entry
+        "* %?"
+        :target (file+head ,filename ,head)
+        :unarrowed t)
+       ("m" "meeting" entry
+        "* %{meeting_name}\n** Attending\n- %?\n** Notes\n*** \n** Takeaways [/]\n- [ ] "
+        :target (file+head ,filename ,head)
+        :unarrowed t))))
   :commands (org-roam-setup)
   :bind (:map personal-org-roam-prefix-map
-               ("b" . org-roam-buffer-toggle)
-               ;; (T)oday
-               ("t" . org-roam-dailies-capture-today)
-               ("T" . org-roam-dailies-goto-today)
-               ;; (Y)esterday
-               ("y" . org-roam-dailies-capture-yesterday)
-               ("Y" . org-roam-dailies-goto-yesterday)
-               ;; To(m)orrow
-               ("m" . org-roam-dailies-capture-tomorrow)
-               ("M" . org-roam-dailes-goto-tomorrow)
-               ;; Select (d)ate
-               ("d" . org-roam-dailies-capture-date)
-               ("D" . org-roam-dailies-goto-date)))
+              ("b" . org-roam-buffer-toggle)
+              ;; Create a journal capture
+              ;; ("j" . cn/org-roam-dailies-journal-today)
+              ;; ("t" . cn/org-roam-dailies-todo-today)
+              ;; (T)oday
+              ("T" . org-roam-dailies-goto-today)
+              ("t" . org-roam-dailies-capture-today)
+              ;; Select (d)ate
+              ("D" . org-roam-dailies-goto-date)
+              ("d" . org-roam-dailies-capture-date)))
 
 (use-package vulpea
   :ensure t
+  :after (org-roam)
   :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable))
   :bind (:map personal-org-roam-prefix-map
               ("f" . vulpea-find)
               ("i" . vulpea-insert)))
+
+(use-package deft
+  :ensure t
+  :after (org-roam)
+  :bind (:map personal-org-roam-prefix-map
+              ("s" . deft))
+  :custom
+  (deft-recursive t)
+  (deft-use-filter-string-for-filename t)
+  (deft-default-extension "org")
+  (deft-directory org-roam-directory))
+
+(use-package org-noter :ensure t)
 
 (org-roam-setup)
 
