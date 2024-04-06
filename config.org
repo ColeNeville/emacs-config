@@ -4,9 +4,11 @@
 
 This gets packaged into ./config.el by org-babel-eval-in-repl imported by the init.el.
 
-* Initial Setup and Configuration
+* Pre Package Initialization
 
-** Auto Update Installed Packages
+** Auto Package Update
+
+Even though this is configuring and running a package I want this to happen first
 
 #+begin_src emacs-lisp
   (use-package auto-package-update
@@ -17,100 +19,43 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     (auto-package-update-hide-results t))
 
   (auto-package-update-maybe)
+  
 #+end_src
 
-** Load and configure Modus Theme
+** Create my C-z prefix
 
-#+begin_src emacs-lisp
-  (use-package modus-themes
-    :ensure t
-    :custom
-    (modus-themes-common-palette-overrides
-     `((border-mode-line-active bg-mode-line-active)
-       (border-mode-line-inactive bg-mode-line-inactive)))
-    (modus-vivendi-palette-overrides
-     `((bg-main "#161616"))))
-
-  (load-theme 'modus-vivendi t)
-#+end_src
-
-** Default Emacs Confiuration
-
-#+begin_src emacs-lisp
-  (setq visible-bell t
-        ring-bell-function 'ignore)
-
-  (setq inhibit-startup-screen t
-        inhibit-startup-message t)
-
-  (setq display-line-numbers-minor-tick 5
-        display-line-numbers-major-tick 25)
-
-  (setq-default display-line-numbers-width 4)
-
-  (setq org-support-shift-select t
-        org-startup-truncated nil)
-
-  (setq enable-recursive-minibuffers t)
-
-  (setq custom-file "~/.config/custom.el")
-#+end_src
-
-** Default Modes Setup
-
-#+begin_src emacs-lisp
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (tab-bar-mode -1)
-  (line-number-mode -1)
-
-  (menu-bar-mode 1)
-
-  (add-hook 'prog-mode-hook 'flymake-mode)
-  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
-#+end_src
-
-** Keybindings
-
-*** Remove Default Keybinds
-
-#+begin_src emacs-lisp
-  (global-unset-key (kbd "C-x C-z"))
-#+end_src
-
-*** Minibuffer Escape
-
-#+begin_src emacs-lisp
-  (global-set-key [escape] 'keyboard-escape-quit)
-#+end_src
-
-*** Create a User-defined Global Prefix
+Note: This gets assigned to a keybind after the packages are configured
 
 #+begin_src emacs-lisp
   (define-prefix-command 'personal-prefix-map)
-  (define-prefix-command 'personal-mode-toggle-prefix-map)
-
-  (define-key personal-mode-toggle-prefix-map
-              "c" 'highlight-changes-mode)
-  (define-key personal-mode-toggle-prefix-map
-              "w" 'whitespace-mode)
-
-  (define-key personal-prefix-map
-              "m" 'personal-mode-toggle-prefix-map)
-
-  (global-set-key (kbd "C-z") 'personal-prefix-map)
 #+end_src
 
-* Utilities
+* Package Configuration
+
+Packages shouldn't get loaded yet and just set custom, binds, hooks, commands, etc. Ideally every package uses one of those sections to get deferred loading until it is needed, this will help speed up loading after the initial load that installs everything with the use-packages.
+
+Future Changes: Change all package definitions to define commands for deferral, hooks and binds should be setup in the final setup.
+
+** Modus Themes
+
+#+begin_src emacs-lisp
+  (use-package modus-themes
+  :ensure t
+  :custom
+  (modus-themes-common-palette-overrides
+   `((border-mode-line-active bg-mode-line-active)
+     (border-mode-line-inactive bg-mode-line-inactive)))
+  (modus-vivendi-palette-overrides
+   `((bg-main "#161616"))))
+#+end_src
 
 ** Ace Window (Window Management)
 
 #+begin_src emacs-lisp
   (use-package ace-window
     :ensure t
-    :bind (:map personal-prefix-map
-                ("s" . ace-window)
-                ("S" . ace-swap-window)))
+    :commands (ace-window
+               ace-swap-window))
 #+end_src
 
 ** Diminish (Hide from Modeline)
@@ -129,13 +74,11 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
 
-
 ** Treemacs (Left Side Directory Tree)
 
 #+begin_src emacs-lisp
   (use-package treemacs
     :ensure t
-    :after (ivy counsel)
     :commands (treemacs
                treemacs-follow-mode
                treemacs-git-commit-diff-mode)
@@ -144,43 +87,15 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :bind (:map personal-prefix-map
                 ("t" . treemacs-select-window))
     :config
+    ;; These are "modes" but more specific to treemacs and its experience
+    ;; I am considering these as configuration for treemacs
     (treemacs-follow-mode 1)
     (treemacs-git-commit-diff-mode 1))
-
-  ;; Treemacs loads after ivy and counsel so the workspace
-  ;; picker has counsel support
 #+end_src
 
-** LSP Mode
+** New Global Minor Modes
 
-#+begin_src emacs-lisp
-  (use-package lsp-mode
-    :ensure t
-    :init
-    (setq lsp-keymap-prefix "C-z l")
-    :commands (lsp lsp-enable-which-key-integration)
-    :hook ((tsx-ts-mode . lsp)
-           (typescript-ts-mode . lsp)
-           (lsp-mode . lsp-enable-which-key-integration)))
-
-  (use-package lsp-ui
-    :ensure t
-    :commands (lsp-ui-mode))
-
-  (use-package lsp-ivy
-    :ensure t
-    :after (lsp-mode ivy)
-    :commands (lsp-ivy-workspace-symbol))
-
-  (use-package lsp-treemacs
-    :ensure t
-    :after (lsp-mode treemacs)
-    :commands (lsp-treemacs-errors-list))
-#+end_src
-
-* New Global Minor Modes
-
-** Counsel/Ivy (Searching)
+*** Counsel + Ivy (Searching)
 
 #+begin_src emacs-lisp
   (use-package ivy
@@ -204,13 +119,37 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
                 ("F" . counsel-git-grep))
     :config
     (diminish 'counsel-mode))
-
-  (ivy-mode 1)
-  (counsel-mode 1)
-  (treemacs 1) ;; Treemacs needs to be initialized after ivy and counsel
 #+end_src
 
-** Which Key Mode
+*** LSP Mode
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :ensure t
+    :init
+    (setq lsp-keymap-prefix "C-z l")
+    :commands (lsp lsp-enable-which-key-integration)
+    :hook ((tsx-ts-mode . lsp)
+           (typescript-ts-mode . lsp)
+           (lsp-mode . lsp-enable-which-key-integration)))
+
+  (use-package lsp-ui
+    :ensure t
+    :after (lsp-mode)
+    :commands (lsp-ui-mode))
+
+  (use-package lsp-ivy
+    :ensure t
+    :after (lsp-mode ivy)
+    :commands (lsp-ivy-workspace-symbol))
+
+  (use-package lsp-treemacs
+    :ensure t
+    :after (lsp-mode treemacs)
+    :commands (lsp-treemacs-errors-list))
+#+end_src
+
+*** Which Key Mode
 
 #+begin_src emacs-lisp
   (use-package which-key
@@ -220,11 +159,9 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :custom
     (which-key-idle-delay 0.5)
     (diminish 'which-key-mode))
-
-  (which-key-mode 1)
 #+end_src
 
-** Company Mode (Code Completion)
+*** Company Mode (Code Completion)
 
 #+begin_src emacs-lisp
   (use-package company
@@ -240,11 +177,9 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
                          company-preview-if-just-one-frontend))
     :config
     (diminish 'company-mode))
-
-  (global-company-mode 1)
 #+end_src
 
-** Rainbow Delimiters
+*** Rainbow Delimiters
 
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
@@ -252,7 +187,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
 
-** Marginalia
+*** Marginalia
 
 #+begin_src emacs-lisp
   (use-package marginalia
@@ -262,9 +197,9 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (marginalia-mode)
 #+end_src
 
-* New Major Modes
+** New Major Modes
 
-** Tree Sitter (Many Modes)
+*** Tree Sitter (Many Modes)
 
 #+begin_src emacs-lisp
   (use-package tree-sitter
@@ -279,12 +214,9 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
   (use-package treesit-auto
     :ensure t
     :commands (global-treesit-auto-mode))
-
-  (global-tree-sitter-mode)
-  (global-treesit-auto-mode)
 #+end_src
 
-** Ledger Mode
+*** Ledger Mode
 
 #+begin_src emacs-lisp
   (use-package ledger-mode
@@ -294,7 +226,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
            (ledger-mode . display-line-numbers-mode)))
 #+end_src
 
-** Nix Mode
+*** Nix Mode
 
 #+BEGIN_SRC emacs-lisp
   (use-package nix-mode
@@ -302,7 +234,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :mode ("\\.nix\\'"))
 #+END_SRC
 
-** Dockerfile Mode
+*** Dockerfile Mode
 
 #+begin_src emacs-lisp
   (use-package dockerfile-mode
@@ -310,7 +242,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :mode ("Dockerfile"))
 #+end_src
 
-** Docker Compose Mode
+*** Docker Compose Mode
 
 #+begin_src emacs-lisp
   (use-package docker-compose-mode
@@ -318,7 +250,7 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :mode ("docker-compose\\.yml"))
 #+end_src
 
-** Terraform
+*** Terraform
 
 #+begin_src emacs-lisp
   (use-package terraform-mode
@@ -326,39 +258,18 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :mode ("\\.tf\\'"))
 #+end_src
 
-* Built-in Major Mode Extras and Configuration
-
-** Org Mode
-
-*** Enable Org Tempo
+*** Robe Mode
 
 #+begin_src emacs-lisp
-  (require 'org-tempo)
-#+end_src
-
-*** Enable Org Indent Mode
-
-#+begin_src emacs-lisp
-  (add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
-  (eval-after-load 'org-indent '(diminish 'org-indent-mode))
-#+end_src
-
-*** Random Settings
-
-#+begin_src emacs-lisp
-  (add-to-list 'org-link-frame-setup '(file . find-file))
-#+end_src
-
-*** Enable Table of Contents
-
-#+begin_src emacs-lisp
-  (use-package toc-org
+  (use-package robe
     :ensure t
-    :commands (toc-org-enable)
-    :hook ((org-mode . toc-org-enable)))
+    :hook ((ruby-mode . robe-mode)
+           (ruby-ts-mode . robe-mode)))
 #+end_src
 
-*** Enable Org Bullets
+** Org Mode Related
+
+*** Org Bullets
 
 #+begin_src emacs-lisp
   (use-package org-bullets
@@ -367,24 +278,21 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :hook ((org-mode . (lambda () (org-bullets-mode 1)))))
 #+end_src
 
-*** Enable and Setup Org Roam
+*** Org Table Of Contents
+
+#+begin_src emacs-lisp
+  (use-package toc-org
+    :ensure t
+    :commands (toc-org-enable)
+    :hook ((org-mode . toc-org-enable)))
+#+end_src
+
+*** Org-Roam
 
 #+begin_src emacs-lisp
   (define-prefix-command 'personal-org-roam-prefix-map)
   (define-key personal-prefix-map
               "n" 'personal-org-roam-prefix-map)
-
-  ;; ;; These aren't working as expected...
-  ;; (defun cn/org-roam-dailies-journal-today ()
-  ;;   "Create a journal entry in the today daily note"
-  ;;   (interactive)
-  ;;   (org-roam-dailies-capture-today :key "j"))
-
-  ;; (defun cn/org-roam-dailies-todo-today ()
-  ;;   "Create a todo entry in the today daily note"
-  ;;   (interactive)
-  ;;   (org-roam-dailies-capture-today :key "t"))
-  ;; ;;
 
   (use-package org-roam
     :ensure t
@@ -392,36 +300,31 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
     :custom
     (org-roam-directory "~/notes/")
     (org-roam-capture-templates
-     '(("n" "note" plain "* %?"
-        :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                           "#+TITLE: ${title}")
-        :unnarrowed t)))
+     (let ((head "#+TITLE: ${title}")
+           (filename "%<%Y%m%d%H%M%S>-${slug}.org"))
+       `(("n" "note" plain "* %?"
+          :target (file+head ,filename ,head)
+          :unnarrowed t))))
     (org-roam-dailies-directory "daily/")
     (org-roam-dailies-capture-templates
      (let ((head "#+TITLE: %<%Y-%m-%d>\n\n* [/] Do today\n\n* Journal")
            (filename "%<%Y-%m-%d>.org"))
-       `(("j" "journal" item
-          "%<%H:%M> - %?"
+       `(("j" "journal" item "%<%H:%M> - %?"
           :target (file+head+olp ,filename ,head ("Journal"))
           :unarrowed t)
-         ("t" "todo" entry
-          "** TODO %?"
+         ("t" "todo" item "- [ ] %?"
           :target (file+head+olp ,filename ,head ("Do today"))
           :unarrowed t)
-         ("n" "note" entry
-          "* %?"
+         ("n" "note" entry "* %?"
           :target (file+head ,filename ,head)
           :unarrowed t)
          ("m" "meeting" entry
-          "* %{meeting_name}\n** Attending\n- %?\n** Notes\n*** \n** Takeaways [/]\n- [ ] "
+          "* %?\n** Attending\n- \n** Notes\n*** \n** Takeaways [/]\n- [ ] "
           :target (file+head ,filename ,head)
           :unarrowed t))))
     :commands (org-roam-setup)
     :bind (:map personal-org-roam-prefix-map
                 ("b" . org-roam-buffer-toggle)
-                ;; Create a journal capture
-                ;; ("j" . cn/org-roam-dailies-journal-today)
-                ;; ("t" . cn/org-roam-dailies-todo-today)
                 ;; (T)oday
                 ("T" . org-roam-dailies-goto-today)
                 ("t" . org-roam-dailies-capture-today)
@@ -450,16 +353,136 @@ This gets packaged into ./config.el by org-babel-eval-in-repl imported by the in
 
   (use-package org-noter :ensure t)
 
-  (org-roam-setup)
+  (use-package org-roam-ui :ensure t)
+
+  (use-package org-ql
+    :ensure t)
+
+  (use-package org-roam-ql
+    :ensure t
+    :after (org-roam))
+
+  (use-package org-roam-ql-ql
+    :ensure t
+    :after (org-ql org-roam-ql))
 #+end_src
 
-** Ruby (Tree Sitter) Mode
+* Set Everything Up
 
-*** Robe Mode
+** Load Default Packages
 
 #+begin_src emacs-lisp
-  (use-package robe
-    :ensure t
-    :hook ((ruby-mode . robe-mode)
-           (ruby-ts-mode . robe-mode)))
+  (require 'org-tempo)
+#+end_src
+
+** Set Variables Not Tied To A Package
+
+#+begin_src emacs-lisp
+  ;; Remove the annoying ding on actions
+  (setq visible-bell t
+        ring-bell-function 'ignore)
+
+  ;; Remove that annoying startup/welcome screen and just give me the scratchpad
+  (setq inhibit-startup-screen t
+        inhibit-startup-message t)
+
+  ;; Configure the display line number on the left side of the buffer mode
+  (setq display-line-numbers-minor-tick 5
+        display-line-numbers-major-tick 25)
+
+  (setq-default display-line-numbers-width 4)
+
+  ;; Org mode options
+  (setq org-support-shift-select t
+        org-startup-truncated nil)
+
+  ;; Opening a link between org notes should open in the same frame rather than a new one
+  ;; Frame spawning in emacs seems to be unpredictable (i need to look more into it)
+  (add-to-list 'org-link-frame-setup '(file . find-file))
+
+  ;; This is nice when using ivy and counsel, but can also be a pain point
+  (setq enable-recursive-minibuffers t)
+
+  ;; Move our custom files and keep init.el clean
+  (setq custom-file "~/.config/emacs_custom.el")
+#+end_src
+
+** Set Keybinds
+
+*** Unset Some Default Binds
+
+*** Create Some Command Prefixes
+
+*** Setup Prefix Keybinds
+
+*** Add Keybinds to the Prefixes
+
+**** Personal Prefix Map
+
+**** Notes Prefix Map
+
+**** Mode Toggle Prefix Map
+
+#+begin_src emacs-lisp  
+
+  ;; Disable some default keybindings -> These are things I don't use normally and will get hit accidentally
+  (global-unset-key (kbd "C-x C-z"))
+
+  ;; Create my C-z prefix I use as my personal prefix
+  ;; -> This is used by some of the use-package definitions so has to happen in the pre init section
+  (global-set-key (kbd "C-z") 'personal-prefix-map)
+
+  ;; Define a prefix that is useful for modes that can get in the way until you want them
+  (define-prefix-command 'personal-mode-toggle-prefix-map)
+  (define-key personal-prefix-map
+              "m" 'personal-mode-toggle-prefix-map)
+
+  (define-key personal-mode-toggle-prefix-map
+              "c" 'highlight-changes-mode)
+  (define-key personal-mode-toggle-prefix-map
+              "w" 'whitespace-mode)
+#+end_src
+
+** Setup Modes
+
+*** Create Hooks to Start Default Modes
+
+#+begin_src emacs-lisp
+  ;; Programming modes hooks
+  (add-hook 'prog-mode-hook 'flymake-mode)
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+#+end_src
+
+*** Starting Modes (including package modes)
+
+#+begin_src emacs-lisp
+  (load-theme 'modus-vivendi t)
+
+  ;; Disable some default minor modes
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (line-number-mode -1)
+
+  ;; Enable some minor modes
+  (menu-bar-mode 1)
+
+  ;; Enable some modes from packages above
+
+  (global-company-mode 1)
+
+  (which-key-mode 1)
+
+  (ivy-mode 1)
+  (counsel-mode 1)
+
+  ;; Treemacs needs to be initialized after ivy and counsel
+  (treemacs 1)
+
+  (global-tree-sitter-mode)
+  (global-treesit-auto-mode)
+
+  (org-roam-setup)
+
+  (add-hook 'org-mode-hook (lambda () (org-indent-mode 1)))
+  (eval-after-load 'org-indent '(diminish 'org-indent-mode))
 #+end_src
