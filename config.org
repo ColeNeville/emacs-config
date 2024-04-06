@@ -18,23 +18,14 @@ Even though this is configuring and running a package I want this to happen firs
     (auto-package-update-delete-old-versions t)
     (auto-package-update-hide-results t))
 
-  (auto-package-update-maybe)
-  
-#+end_src
-
-** Create my C-z prefix
-
-Note: This gets assigned to a keybind after the packages are configured
-
-#+begin_src emacs-lisp
-  (define-prefix-command 'personal-prefix-map)
+  (auto-package-update-maybe)  
 #+end_src
 
 * Package Configuration
 
 Packages shouldn't get loaded yet and just set custom, binds, hooks, commands, etc. Ideally every package uses one of those sections to get deferred loading until it is needed, this will help speed up loading after the initial load that installs everything with the use-packages.
 
-Future Changes: Change all package definitions to define commands for deferral, hooks and binds should be setup in the final setup.
+Future Changes: Change all package definitions to define commands for deferral, hooks and binds should be setup in the final setup
 
 ** Modus Themes
 
@@ -69,7 +60,8 @@ Future Changes: Change all package definitions to define commands for deferral, 
 #+begin_src emacs-lisp
   (use-package magit
     :ensure t
-    :commands (magit-status magit-get-current-branch)
+    :commands (magit-status
+               magit-get-current-branch)
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 #+end_src
@@ -81,11 +73,10 @@ Future Changes: Change all package definitions to define commands for deferral, 
     :ensure t
     :commands (treemacs
                treemacs-follow-mode
-               treemacs-git-commit-diff-mode)
+               treemacs-git-commit-diff-mode
+               treemacs-select-window)
     :custom
     (treemacs-width 45)
-    :bind (:map personal-prefix-map
-                ("t" . treemacs-select-window))
     :config
     ;; These are "modes" but more specific to treemacs and its experience
     ;; I am considering these as configuration for treemacs
@@ -113,10 +104,9 @@ Future Changes: Change all package definitions to define commands for deferral, 
   (use-package counsel
     :ensure t
     :after ivy
-    :commands (counsel-mode)
-    :bind (:map personal-prefix-map
-                ("f" . counsel-grep)
-                ("F" . counsel-git-grep))
+    :commands (counsel-mode
+               counsel-grep
+               counsel-git-grep)
     :config
     (diminish 'counsel-mode))
 #+end_src
@@ -154,8 +144,8 @@ Future Changes: Change all package definitions to define commands for deferral, 
 #+begin_src emacs-lisp
   (use-package which-key
     :ensure t
-    :commands (which-key-mode)
-    :bind (("M-h" . which-key-show-top-level))
+    :commands (which-key-mode
+               which-key-show-top-level)
     :custom
     (which-key-idle-delay 0.5)
     (diminish 'which-key-mode))
@@ -193,8 +183,6 @@ Future Changes: Change all package definitions to define commands for deferral, 
   (use-package marginalia
     :ensure t
     :commands (marginalia-mode))
-
-  (marginalia-mode)
 #+end_src
 
 ** New Major Modes
@@ -290,10 +278,6 @@ Future Changes: Change all package definitions to define commands for deferral, 
 *** Org-Roam
 
 #+begin_src emacs-lisp
-  (define-prefix-command 'personal-org-roam-prefix-map)
-  (define-key personal-prefix-map
-              "n" 'personal-org-roam-prefix-map)
-
   (use-package org-roam
     :ensure t
     :after (org)
@@ -322,45 +306,47 @@ Future Changes: Change all package definitions to define commands for deferral, 
           "* %?\n** Attending\n- \n** Notes\n*** \n** Takeaways [/]\n- [ ] "
           :target (file+head ,filename ,head)
           :unarrowed t))))
-    :commands (org-roam-setup)
-    :bind (:map personal-org-roam-prefix-map
-                ("b" . org-roam-buffer-toggle)
-                ;; (T)oday
-                ("T" . org-roam-dailies-goto-today)
-                ("t" . org-roam-dailies-capture-today)
-                ;; Select (d)ate
-                ("D" . org-roam-dailies-goto-date)
-                ("d" . org-roam-dailies-capture-date)))
+    :commands (org-roam-setup
+               org-roam-buffer-toggle
+               org-roam-dailies-goto-today
+               org-roam-dailies-capture-today
+               org-roam-dailies-goto-date
+               org-roam-dailies-capture-date))
 
   (use-package vulpea
     :ensure t
     :after (org-roam)
     :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable))
-    :bind (:map personal-org-roam-prefix-map
-                ("f" . vulpea-find)
-                ("i" . vulpea-insert)))
+    :commands (vulpea-find
+               vulpea-insert))
 
   (use-package deft
     :ensure t
     :after (org-roam)
-    :bind (:map personal-org-roam-prefix-map
-                ("s" . deft))
+    :commands (deft)
     :custom
     (deft-recursive t)
     (deft-use-filter-string-for-filename t)
     (deft-default-extension "org")
     (deft-directory org-roam-directory))
 
-  (use-package org-noter :ensure t)
+  (use-package org-noter
+    :ensure t
+    :defer t)
 
-  (use-package org-roam-ui :ensure t)
+  (use-package org-roam-ui
+    :ensure t
+    :after (org-roam)
+    :commands (org-roam-ui-open))
 
   (use-package org-ql
-    :ensure t)
+    :ensure t
+    :defer t)
 
   (use-package org-roam-ql
     :ensure t
-    :after (org-roam))
+    :after (org-roam)
+    :commands (org-roam-ql-search))
 
   (use-package org-roam-ql-ql
     :ensure t
@@ -411,32 +397,92 @@ Future Changes: Change all package definitions to define commands for deferral, 
 
 *** Unset Some Default Binds
 
+#+begin_src emacs-lisp
+  ;; I keep pressing this trying to undo... Minimize doesn't really work on my personal laptop with qtile
+  ;; I would also unbind C-z too but I commendeer it for my personal prefix.
+  (global-unset-key (kbd "C-x C-z"))
+#+end_src
+
 *** Create Some Command Prefixes
 
+#+begin_src emacs-lisp
+  (define-prefix-command 'personal-prefix-map)
+
+  ;; Define a prefix that is useful for modes that can get in the way until you want them
+  (define-prefix-command 'personal-mode-toggle-prefix-map)
+
+  (define-prefix-command 'personal-org-roam-prefix-map)
+#+end_src
+
 *** Setup Prefix Keybinds
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-z") 'personal-prefix-map)
+
+  (define-key personal-prefix-map
+              "m" 'personal-mode-toggle-prefix-map)
+
+  (define-key personal-prefix-map
+              "n" 'personal-org-roam-prefix-map)
+#+end_src
+
+*** Add Some Top Level Keybinds
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "M-h") 'which-key-show-top-level)
+#+end_src
 
 *** Add Keybinds to the Prefixes
 
 **** Personal Prefix Map
 
+#+begin_src emacs-lisp
+  (define-key personal-prefix-map
+              "f" 'counsel-grep)
+  (define-key personal-prefix-map
+              "F" 'counsel-git-grep)
+
+  (define-key personal-prefix-map
+              "s" 'ace-window)
+  (define-key personal-prefix-map
+              "S" 'ace-swap-window)
+
+  (define-key personal-prefix-map
+              "t" 'treemacs-select-window)
+#+end_src
+
 **** Notes Prefix Map
+
+#+begin_src emacs-lisp
+  (define-key personal-org-roam-prefix-map
+              "b" 'org-roam-buffer-toggle)
+
+  (define-key personal-org-roam-prefix-map
+              "d" 'org-roam-dailies-capture-date)
+  (define-key personal-org-roam-prefix-map
+              "D" 'org-roam-dailies-goto-date)
+
+  (define-key personal-org-roam-prefix-map
+              "f" 'vulpea-find)
+
+  (define-key personal-org-roam-prefix-map
+              "i" 'vulpea-insert)
+
+  (define-key personal-org-roam-prefix-map
+              "s" 'deft) ;; "s" for search
+
+  (define-key personal-org-roam-prefix-map
+              "t" 'org-roam-dailies-capture-today)
+  (define-key personal-org-roam-prefix-map
+              "T" 'org-roam-dailies-goto-today)
+
+  (define-key personal-org-roam-prefix-map
+              "q" 'org-roam-ql-search)
+#+end_src
 
 **** Mode Toggle Prefix Map
 
 #+begin_src emacs-lisp  
-
-  ;; Disable some default keybindings -> These are things I don't use normally and will get hit accidentally
-  (global-unset-key (kbd "C-x C-z"))
-
-  ;; Create my C-z prefix I use as my personal prefix
-  ;; -> This is used by some of the use-package definitions so has to happen in the pre init section
-  (global-set-key (kbd "C-z") 'personal-prefix-map)
-
-  ;; Define a prefix that is useful for modes that can get in the way until you want them
-  (define-prefix-command 'personal-mode-toggle-prefix-map)
-  (define-key personal-prefix-map
-              "m" 'personal-mode-toggle-prefix-map)
-
   (define-key personal-mode-toggle-prefix-map
               "c" 'highlight-changes-mode)
   (define-key personal-mode-toggle-prefix-map
@@ -445,12 +491,18 @@ Future Changes: Change all package definitions to define commands for deferral, 
 
 ** Setup Modes
 
-*** Create Hooks to Start Default Modes
+*** Create Hooks to Start Modes
 
 #+begin_src emacs-lisp
   ;; Programming modes hooks
   (add-hook 'prog-mode-hook 'flymake-mode)
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+#+end_src
+
+*** Adding File Automodes
+
+#+begin_src emacs-lisp
+
 #+end_src
 
 *** Starting Modes (including package modes)
@@ -466,14 +518,19 @@ Future Changes: Change all package definitions to define commands for deferral, 
   ;; Enable some minor modes
   (menu-bar-mode 1)
 
-  ;; Enable some modes from packages above
+  ;; Make the cursor easier to find
+  (blink-cursor-mode 0)
+  (global-hl-line-mode 1)
 
+  ;; Enable some modes from packages above
   (global-company-mode 1)
 
   (which-key-mode 1)
 
   (ivy-mode 1)
   (counsel-mode 1)
+
+  (marginalia-mode 1)
 
   ;; Treemacs needs to be initialized after ivy and counsel
   (treemacs 1)

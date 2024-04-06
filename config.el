@@ -7,8 +7,6 @@
 
 (auto-package-update-maybe)
 
-(define-prefix-command 'personal-prefix-map)
-
 (use-package modus-themes
 :ensure t
 :custom
@@ -20,15 +18,15 @@
 
 (use-package ace-window
   :ensure t
-  :bind (:map personal-prefix-map
-              ("s" . ace-window)
-              ("S" . ace-swap-window)))
+  :commands (ace-window
+             ace-swap-window))
 
 (use-package diminish :ensure t)
 
 (use-package magit
   :ensure t
-  :commands (magit-status magit-get-current-branch)
+  :commands (magit-status
+             magit-get-current-branch)
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
@@ -36,11 +34,10 @@
   :ensure t
   :commands (treemacs
              treemacs-follow-mode
-             treemacs-git-commit-diff-mode)
+             treemacs-git-commit-diff-mode
+             treemacs-select-window)
   :custom
   (treemacs-width 45)
-  :bind (:map personal-prefix-map
-              ("t" . treemacs-select-window))
   :config
   ;; These are "modes" but more specific to treemacs and its experience
   ;; I am considering these as configuration for treemacs
@@ -62,10 +59,9 @@
 (use-package counsel
   :ensure t
   :after ivy
-  :commands (counsel-mode)
-  :bind (:map personal-prefix-map
-              ("f" . counsel-grep)
-              ("F" . counsel-git-grep))
+  :commands (counsel-mode
+             counsel-grep
+             counsel-git-grep)
   :config
   (diminish 'counsel-mode))
 
@@ -95,8 +91,8 @@
 
 (use-package which-key
   :ensure t
-  :commands (which-key-mode)
-  :bind (("M-h" . which-key-show-top-level))
+  :commands (which-key-mode
+             which-key-show-top-level)
   :custom
   (which-key-idle-delay 0.5)
   (diminish 'which-key-mode))
@@ -122,8 +118,6 @@
 (use-package marginalia
   :ensure t
   :commands (marginalia-mode))
-
-(marginalia-mode)
 
 (use-package tree-sitter
   :ensure t
@@ -175,10 +169,6 @@
   :commands (toc-org-enable)
   :hook ((org-mode . toc-org-enable)))
 
-(define-prefix-command 'personal-org-roam-prefix-map)
-(define-key personal-prefix-map
-            "n" 'personal-org-roam-prefix-map)
-
 (use-package org-roam
   :ensure t
   :after (org)
@@ -207,45 +197,47 @@
         "* %?\n** Attending\n- \n** Notes\n*** \n** Takeaways [/]\n- [ ] "
         :target (file+head ,filename ,head)
         :unarrowed t))))
-  :commands (org-roam-setup)
-  :bind (:map personal-org-roam-prefix-map
-              ("b" . org-roam-buffer-toggle)
-              ;; (T)oday
-              ("T" . org-roam-dailies-goto-today)
-              ("t" . org-roam-dailies-capture-today)
-              ;; Select (d)ate
-              ("D" . org-roam-dailies-goto-date)
-              ("d" . org-roam-dailies-capture-date)))
+  :commands (org-roam-setup
+             org-roam-buffer-toggle
+             org-roam-dailies-goto-today
+             org-roam-dailies-capture-today
+             org-roam-dailies-goto-date
+             org-roam-dailies-capture-date))
 
 (use-package vulpea
   :ensure t
   :after (org-roam)
   :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable))
-  :bind (:map personal-org-roam-prefix-map
-              ("f" . vulpea-find)
-              ("i" . vulpea-insert)))
+  :commands (vulpea-find
+             vulpea-insert))
 
 (use-package deft
   :ensure t
   :after (org-roam)
-  :bind (:map personal-org-roam-prefix-map
-              ("s" . deft))
+  :commands (deft)
   :custom
   (deft-recursive t)
   (deft-use-filter-string-for-filename t)
   (deft-default-extension "org")
   (deft-directory org-roam-directory))
 
-(use-package org-noter :ensure t)
+(use-package org-noter
+  :ensure t
+  :defer t)
 
-(use-package org-roam-ui :ensure t)
+(use-package org-roam-ui
+  :ensure t
+  :after (org-roam)
+  :commands (org-roam-ui-open))
 
 (use-package org-ql
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package org-roam-ql
   :ensure t
-  :after (org-roam))
+  :after (org-roam)
+  :commands (org-roam-ql-search))
 
 (use-package org-roam-ql-ql
   :ensure t
@@ -281,17 +273,64 @@
 ;; Move our custom files and keep init.el clean
 (setq custom-file "~/.config/emacs_custom.el")
 
-;; Disable some default keybindings -> These are things I don't use normally and will get hit accidentally
+;; I keep pressing this trying to undo... Minimize doesn't really work on my personal laptop with qtile
+;; I would also unbind C-z too but I commendeer it for my personal prefix.
 (global-unset-key (kbd "C-x C-z"))
 
-;; Create my C-z prefix I use as my personal prefix
-;; -> This is used by some of the use-package definitions so has to happen in the pre init section
-(global-set-key (kbd "C-z") 'personal-prefix-map)
+(define-prefix-command 'personal-prefix-map)
 
 ;; Define a prefix that is useful for modes that can get in the way until you want them
 (define-prefix-command 'personal-mode-toggle-prefix-map)
+
+(define-prefix-command 'personal-org-roam-prefix-map)
+
+(global-set-key (kbd "C-z") 'personal-prefix-map)
+
 (define-key personal-prefix-map
             "m" 'personal-mode-toggle-prefix-map)
+
+(define-key personal-prefix-map
+            "n" 'personal-org-roam-prefix-map)
+
+(global-set-key (kbd "M-h") 'which-key-show-top-level)
+
+(define-key personal-prefix-map
+            "f" 'counsel-grep)
+(define-key personal-prefix-map
+            "F" 'counsel-git-grep)
+
+(define-key personal-prefix-map
+            "s" 'ace-window)
+(define-key personal-prefix-map
+            "S" 'ace-swap-window)
+
+(define-key personal-prefix-map
+            "t" 'treemacs-select-window)
+
+(define-key personal-org-roam-prefix-map
+            "b" 'org-roam-buffer-toggle)
+
+(define-key personal-org-roam-prefix-map
+            "d" 'org-roam-dailies-capture-date)
+(define-key personal-org-roam-prefix-map
+            "D" 'org-roam-dailies-goto-date)
+
+(define-key personal-org-roam-prefix-map
+            "f" 'vulpea-find)
+
+(define-key personal-org-roam-prefix-map
+            "i" 'vulpea-insert)
+
+(define-key personal-org-roam-prefix-map
+            "s" 'deft) ;; "s" for search
+
+(define-key personal-org-roam-prefix-map
+            "t" 'org-roam-dailies-capture-today)
+(define-key personal-org-roam-prefix-map
+            "T" 'org-roam-dailies-goto-today)
+
+(define-key personal-org-roam-prefix-map
+            "q" 'org-roam-ql-search)
 
 (define-key personal-mode-toggle-prefix-map
             "c" 'highlight-changes-mode)
@@ -301,6 +340,8 @@
 ;; Programming modes hooks
 (add-hook 'prog-mode-hook 'flymake-mode)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+
 
 (load-theme 'modus-vivendi t)
 
@@ -320,6 +361,8 @@
 
 (ivy-mode 1)
 (counsel-mode 1)
+
+(marginalia-mode 1)
 
 ;; Treemacs needs to be initialized after ivy and counsel
 (treemacs 1)
