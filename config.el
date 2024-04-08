@@ -2,7 +2,6 @@
   :ensure t
   :commands (auto-package-update-maybe)
   :custom
-  (auto-package-update-delete-old-versions t)
   (auto-package-update-hide-results t))
 
 (auto-package-update-maybe)
@@ -70,9 +69,7 @@
   :init
   (setq lsp-keymap-prefix "C-z l")
   :commands (lsp lsp-enable-which-key-integration)
-  :hook ((tsx-ts-mode . lsp)
-         (typescript-ts-mode . lsp)
-         (lsp-mode . lsp-enable-which-key-integration)))
+  :hook ((lsp-mode . lsp-enable-which-key-integration)))
 
 (use-package lsp-ui
   :ensure t
@@ -161,13 +158,11 @@
 
 (use-package org-bullets
   :ensure t
-  :commands (org-bullets-mode)
-  :hook ((org-mode . (lambda () (org-bullets-mode 1)))))
+  :commands (org-bullets-mode))
 
 (use-package toc-org
   :ensure t
-  :commands (toc-org-enable)
-  :hook ((org-mode . toc-org-enable)))
+  :commands (toc-org-enable))
 
 (use-package org-roam
   :ensure t
@@ -341,6 +336,17 @@
 (add-hook 'prog-mode-hook 'flymake-mode)
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
+;; Hooks to start lsp-mode
+(add-hook 'tsx-ts-mode-hook 'lsp)
+(add-hook 'typescript-ts-mode-hook 'lsp)
+
+;; Org bullets is actually a global mode but I want to defer loading until we open an org file hense the
+;; lambda to call with a 1 so we aren't toggling it every load of an org file
+(add-hook 'org-mode-hook
+          `(lambda () (org-bullets-mode 1)))
+
+(add-hook 'org-mode-hook 'toc-org-enable)
+
 
 
 (load-theme 'modus-vivendi t)
@@ -353,8 +359,11 @@
 ;; Enable some minor modes
 (menu-bar-mode 1)
 
-;; Enable some modes from packages above
+;; Make the cursor easier to find
+(blink-cursor-mode 0)
+(global-hl-line-mode 1)
 
+;; Enable some modes from packages above
 (global-company-mode 1)
 
 (which-key-mode 1)

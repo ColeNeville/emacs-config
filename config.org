@@ -15,7 +15,6 @@ Even though this is configuring and running a package I want this to happen firs
     :ensure t
     :commands (auto-package-update-maybe)
     :custom
-    (auto-package-update-delete-old-versions t)
     (auto-package-update-hide-results t))
 
   (auto-package-update-maybe)  
@@ -119,9 +118,7 @@ Future Changes: Change all package definitions to define commands for deferral, 
     :init
     (setq lsp-keymap-prefix "C-z l")
     :commands (lsp lsp-enable-which-key-integration)
-    :hook ((tsx-ts-mode . lsp)
-           (typescript-ts-mode . lsp)
-           (lsp-mode . lsp-enable-which-key-integration)))
+    :hook ((lsp-mode . lsp-enable-which-key-integration)))
 
   (use-package lsp-ui
     :ensure t
@@ -262,8 +259,7 @@ Future Changes: Change all package definitions to define commands for deferral, 
 #+begin_src emacs-lisp
   (use-package org-bullets
     :ensure t
-    :commands (org-bullets-mode)
-    :hook ((org-mode . (lambda () (org-bullets-mode 1)))))
+    :commands (org-bullets-mode))
 #+end_src
 
 *** Org Table Of Contents
@@ -271,8 +267,7 @@ Future Changes: Change all package definitions to define commands for deferral, 
 #+begin_src emacs-lisp
   (use-package toc-org
     :ensure t
-    :commands (toc-org-enable)
-    :hook ((org-mode . toc-org-enable)))
+    :commands (toc-org-enable))
 #+end_src
 
 *** Org-Roam
@@ -497,6 +492,17 @@ Future Changes: Change all package definitions to define commands for deferral, 
   ;; Programming modes hooks
   (add-hook 'prog-mode-hook 'flymake-mode)
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+
+  ;; Hooks to start lsp-mode
+  (add-hook 'tsx-ts-mode-hook 'lsp)
+  (add-hook 'typescript-ts-mode-hook 'lsp)
+
+  ;; Org bullets is actually a global mode but I want to defer loading until we open an org file hense the
+  ;; lambda to call with a 1 so we aren't toggling it every load of an org file
+  (add-hook 'org-mode-hook
+            `(lambda () (org-bullets-mode 1)))
+
+  (add-hook 'org-mode-hook 'toc-org-enable)
 #+end_src
 
 *** Adding File Automodes
