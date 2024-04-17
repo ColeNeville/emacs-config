@@ -33,7 +33,7 @@
   :ensure t
   :commands (treemacs
              treemacs-follow-mode
-             treemacs-git-commit-diff-mode
+             treemacs-git-commit-diff-modeq
              treemacs-select-window)
   :custom
   (treemacs-width 45)
@@ -42,6 +42,10 @@
   ;; I am considering these as configuration for treemacs
   (treemacs-follow-mode 1)
   (treemacs-git-commit-diff-mode 1))
+
+(use-package git-timemachine
+  :ensure t
+  :commands (git-timemachine))
 
 (use-package ivy
   :ensure t
@@ -64,27 +68,37 @@
   :config
   (diminish 'counsel-mode))
 
-(use-package lsp-mode
-  :ensure t
-  :init
-  (setq lsp-keymap-prefix "C-z l")
-  :commands (lsp lsp-enable-which-key-integration)
-  :hook ((lsp-mode . lsp-enable-which-key-integration)))
+;; (use-package lsp-mode
+;;   :ensure t
+;;   :init
+;;   (setq lsp-keymap-prefix "C-z l")
+;;   :commands (lsp lsp-enable-which-key-integration)
+;;   :hook ((lsp-mode . lsp-enable-which-key-integration))
+;;   :config
+;;   (add-to-list 'lsp-disabled-clients 'rubocop-ls)
+;;   (add-to-list 'lsp-disabled-clients 'sorbet-ls))
 
-(use-package lsp-ui
-  :ensure t
-  :after (lsp-mode)
-  :commands (lsp-ui-mode))
+;; (use-package lsp-ui
+;;   :ensure t
+;;   :after (lsp-mode)
+;;   :commands (lsp-ui-mode))
 
-(use-package lsp-ivy
-  :ensure t
-  :after (lsp-mode ivy)
-  :commands (lsp-ivy-workspace-symbol))
+;; (use-package lsp-ivy
+;;   :ensure t
+;;   :after (lsp-mode ivy)
+;;   :commands (lsp-ivy-workspace-symbol))
 
-(use-package lsp-treemacs
+;; (use-package lsp-treemacs
+;;   :ensure t
+;;   :after (lsp-mode treemacs)
+;;   :commands (lsp-treemacs-errors-list))
+
+(use-package eglot
   :ensure t
-  :after (lsp-mode treemacs)
-  :commands (lsp-treemacs-errors-list))
+  :commands (eglot-ensure)
+  :config
+  (add-to-list 'eglot-server-programs
+               `(ruby-ts-mode . ("ruby-lsp"))))
 
 (use-package which-key
   :ensure t
@@ -106,6 +120,7 @@
   (company-frontends '(company-pseudo-tooltip-frontend
                        company-preview-if-just-one-frontend))
   :config
+  (push 'company-robe company-backends)
   (diminish 'company-mode))
 
 (use-package rainbow-delimiters
@@ -115,6 +130,12 @@
 (use-package marginalia
   :ensure t
   :commands (marginalia-mode))
+
+(use-package rbenv
+  :ensure t
+  :commands (global-rbenv-mode
+             rbenv-use-corresponding
+             rbenv-use-global))
 
 (use-package tree-sitter
   :ensure t
@@ -151,10 +172,13 @@
   :ensure t
   :mode ("\\.tf\\'"))
 
-(use-package robe
-  :ensure t
-  :hook ((ruby-mode . robe-mode)
-         (ruby-ts-mode . robe-mode)))
+;; (use-package robe
+;;   :ensure t
+;;   :commands (robe-mode)
+;;   :config
+;;   (rbenv-use-corresponding)
+;;   (global-rbenv-mode 1)
+;;   (robe-start))
 
 (use-package org-bullets
   :ensure t
@@ -240,6 +264,15 @@
 
 (require 'org-tempo)
 
+(defun cn/handle-ruby-mode-hook ()
+  (interactive)
+  (rbenv-use-global)
+  (global-rbenv-mode 1)
+  (eglot-ensure))
+
+(setq read-process-output-max (* 1024 1024))
+(setq gc-cons-threshold 100000000)
+
 ;; Remove the annoying ding on actions
 (setq visible-bell t
       ring-bell-function 'ignore)
@@ -253,6 +286,8 @@
       display-line-numbers-major-tick 25)
 
 (setq-default display-line-numbers-width 4)
+
+(setq-default show-trailing-whitespace t)
 
 ;; Org mode options
 (setq org-support-shift-select t
@@ -337,8 +372,8 @@
 (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 ;; Hooks to start lsp-mode
-(add-hook 'tsx-ts-mode-hook 'lsp)
-(add-hook 'typescript-ts-mode-hook 'lsp)
+(add-hook 'tsx-ts-mode-hook 'eglot-ensure)
+(add-hook 'typescript-ts-mode-hook 'eglot-ensure)
 
 ;; Org bullets is actually a global mode but I want to defer loading until we open an org file hense the
 ;; lambda to call with a 1 so we aren't toggling it every load of an org file
@@ -346,6 +381,14 @@
           `(lambda () (org-bullets-mode 1)))
 
 (add-hook 'org-mode-hook 'toc-org-enable)
+
+;; This needs to do 4 things in order
+;; 1. Enable robe mode for the current buffer
+;; 2. Select the rbenv ruby version using the selected file
+;; 3. Enable rbenv-mode globally so robe can use it
+;; 4. Start robe (should use the rbenv version)
+(add-hook 'ruby-mode-hook 'cn/handle-ruby-mode-hook)
+(add-hook 'ruby-ts-mode-hook 'cn/handle-ruby-mode-hook)
 
 
 
